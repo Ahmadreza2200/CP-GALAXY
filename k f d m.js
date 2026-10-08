@@ -1,506 +1,986 @@
-document.addEventListener("DOMContentLoaded", () => {
+const products = [
 
-    let cart = [];
+    {
+        id:1,
+        cp:80,
+        name:"80 CP",
+        price:"۹۹,۰۰۰ تومان",
+        type:"cheap",
+        tag:"اقتصادی",
+        desc:"بسته کوچک و اقتصادی."
+    },
 
-    const cartPanel =
-        document.getElementById("cartPanel");
+    {
+        id:2,
+        cp:420,
+        name:"420 CP",
+        price:"۴۹۹,۰۰۰ تومان",
+        type:"popular",
+        tag:"محبوب",
+        desc:"یکی از بسته‌های محبوب."
+    },
 
-    const overlay =
-        document.getElementById("overlay");
+    {
+        id:3,
+        cp:880,
+        name:"880 CP",
+        price:"۹۴۹,۰۰۰ تومان",
+        type:"popular",
+        tag:"محبوب",
+        desc:"انتخاب مناسب برای خرید بیشتر."
+    },
 
-    const checkoutModal =
-        document.getElementById("checkoutModal");
+    {
+        id:4,
+        cp:1280,
+        name:"1280 CP",
+        price:"۱,۲۹۹,۰۰۰ تومان",
+        type:"popular",
+        tag:"محبوب",
+        desc:"بسته متوسط برای کاربران فعال."
+    },
 
-    const cartItems =
-        document.getElementById("cartItems");
+    {
+        id:5,
+        cp:1600,
+        name:"1600 CP",
+        price:"۱,۵۹۹,۰۰۰ تومان",
+        type:"special",
+        tag:"ویژه",
+        desc:"بسته ویژه CP Galaxy."
+    },
 
-    const cartCount =
-        document.getElementById("cartCount");
+    {
+        id:6,
+        cp:2400,
+        name:"2400 CP",
+        price:"۲,۳۹۹,۰۰۰ تومان",
+        type:"special",
+        tag:"ویژه",
+        desc:"بسته بزرگ برای خرید بیشتر."
+    },
 
-    const cartTotal =
-        document.getElementById("cartTotal");
+    {
+        id:7,
+        cp:3200,
+        name:"3200 CP",
+        price:"۳,۱۹۹,۰۰۰ تومان",
+        type:"special",
+        tag:"ویژه",
+        desc:"بسته بزرگ کاربران حرفه‌ای."
+    },
 
-    const checkoutTotal =
-        document.getElementById("checkoutTotal");
+    {
+        id:8,
+        cp:5000,
+        name:"5000 CP",
+        price:"۴,۸۹۹,۰۰۰ تومان",
+        type:"special",
+        tag:"ویژه",
+        desc:"بسته بزرگ CP."
+    },
 
-    const checkoutBtn =
-        document.getElementById("checkoutBtn");
+    {
+        id:9,
+        cp:6500,
+        name:"6500 CP",
+        price:"۶,۱۹۹,۰۰۰ تومان",
+        type:"special",
+        tag:"ویژه",
+        desc:"بسته بسیار بزرگ."
+    },
 
+    {
+        id:10,
+        cp:8000,
+        name:"8000 CP",
+        price:"۷,۶۹۹,۰۰۰ تومان",
+        type:"special",
+        tag:"ویژه",
+        desc:"برای خریدهای سنگین."
+    },
 
-    /* ================= OPEN CART ================= */
+    {
+        id:11,
+        cp:10000,
+        name:"10000 CP",
+        price:"۹,۱۹۹,۰۰۰ تومان",
+        type:"special",
+        tag:"بزرگ",
+        desc:"بسته بسیار بزرگ."
+    },
 
-    function openCart() {
-
-        cartPanel.classList.add("active");
-        overlay.classList.add("active");
-
-        document.body.style.overflow = "hidden";
+    {
+        id:12,
+        cp:10800,
+        name:"10800 CP",
+        price:"۹,۹۹۹,۰۰۰ تومان",
+        type:"special",
+        tag:"بزرگ‌ترین",
+        desc:"بزرگ‌ترین بسته فروشگاه."
     }
 
+];
 
-    /* ================= CLOSE CART ================= */
 
-    function closeCart() {
+let orders =
+    JSON.parse(
+        localStorage.getItem("cpGalaxyOrders")
+        || "[]"
+    );
 
-        cartPanel.classList.remove("active");
-        overlay.classList.remove("active");
 
-        if (!checkoutModal.classList.contains("active")) {
-            document.body.style.overflow = "";
+let currentFilter = "all";
+
+let paymentIndex = null;
+
+
+/* =========================
+   SAVE
+========================= */
+
+function saveOrders(){
+
+    localStorage.setItem(
+        "cpGalaxyOrders",
+        JSON.stringify(orders)
+    );
+
+    updateOrderCount();
+
+}
+
+
+/* =========================
+   COUNT
+========================= */
+
+function updateOrderCount(){
+
+    document
+        .getElementById("orderCount")
+        .textContent =
+        orders.length;
+
+}
+
+
+/* =========================
+   PAGE SYSTEM
+========================= */
+
+function showPage(page){
+
+    const pages = [
+
+        "home",
+        "shop",
+        "orders",
+        "checkout",
+        "success"
+
+    ];
+
+
+    pages.forEach(name => {
+
+        const element =
+            document.getElementById(
+                name + "Page"
+            );
+
+        if(element){
+
+            element.classList.add("hidden");
+
         }
+
+    });
+
+
+    const active =
+        document.getElementById(
+            page + "Page"
+        );
+
+
+    if(active){
+
+        active.classList.remove("hidden");
+
     }
 
 
-    /* ================= ADD PRODUCT ================= */
+    if(page === "shop"){
 
-    function addProduct(name, price) {
+        renderProducts();
 
-        const existing =
-            cart.find(item => item.name === name);
+    }
 
-        if (existing) {
 
-            existing.quantity++;
+    if(page === "orders"){
 
-        } else {
+        renderOrders();
 
-            cart.push({
-                name: name,
-                price: price,
-                quantity: 1
+    }
+
+
+    if(page === "checkout"){
+
+        renderCheckout();
+
+    }
+
+
+    window.scrollTo({
+
+        top:0,
+
+        behavior:"smooth"
+
+    });
+
+}
+
+
+/* =========================
+   HOME
+========================= */
+
+function goHome(){
+
+    showPage("home");
+
+}
+
+
+function scrollToSection(id){
+
+    showPage("home");
+
+
+    setTimeout(() => {
+
+        const element =
+            document.getElementById(id);
+
+        if(element){
+
+            element.scrollIntoView({
+
+                behavior:"smooth"
+
             });
+
         }
 
-        updateCart();
+    },100);
 
-        openCart();
+}
+
+
+/* =========================
+   HOME FILTER
+========================= */
+
+function setFilterFromHome(filter){
+
+    showPage("shop");
+
+    setTimeout(() => {
+
+        setFilter(
+            filter,
+            document.querySelector(
+                `[data-filter="${filter}"]`
+            )
+        );
+
+    },100);
+
+}
+
+
+/* =========================
+   PRODUCTS
+========================= */
+
+function renderProducts(){
+
+    const grid =
+        document.getElementById(
+            "productsGrid"
+        );
+
+
+    const search =
+        document
+        .getElementById(
+            "searchInput"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const filtered =
+        products.filter(product => {
+
+
+            const matchesSearch =
+
+                !search
+
+                ||
+
+                product.name
+                .toLowerCase()
+                .includes(search)
+
+                ||
+
+                String(product.cp)
+                .includes(search);
+
+
+            const matchesFilter =
+
+                currentFilter === "all"
+
+                ||
+
+                product.type === currentFilter;
+
+
+            return (
+                matchesSearch
+                &&
+                matchesFilter
+            );
+
+        });
+
+
+    if(filtered.length === 0){
+
+        grid.innerHTML = `
+
+            <div
+                class="empty"
+                style="grid-column:1/-1">
+
+                <strong>
+                    بسته‌ای پیدا نشد
+                </strong>
+
+                عبارت دیگری را امتحان کن.
+
+            </div>
+
+        `;
+
+        return;
+
     }
 
 
-    /* ================= UPDATE CART ================= */
+    grid.innerHTML =
 
-    function updateCart() {
+        filtered.map(product => `
 
-        cartItems.innerHTML = "";
+            <article class="product">
 
-        let total = 0;
-        let count = 0;
+                <span class="product-tag">
+
+                    ${product.tag}
+
+                </span>
 
 
-        if (cart.length === 0) {
+                <div class="product-icon">
 
-            cartItems.innerHTML = `
-                <div class="empty-cart">
-                    <div>🛒</div>
-                    <p>سبد خرید خالی است</p>
+                    💎
+
                 </div>
-            `;
-
-        } else {
-
-            cart.forEach((item, index) => {
-
-                const itemTotal =
-                    item.price * item.quantity;
-
-                total += itemTotal;
-
-                count += item.quantity;
 
 
-                const element =
-                    document.createElement("div");
+                <h3>
 
-                element.className = "cart-item";
+                    ${product.name}
 
-
-                element.innerHTML = `
-
-                    <div>
-
-                        <h3>
-                            ${item.name}
-                        </h3>
-
-                        <div class="cart-item-price">
-                            ${item.price.toLocaleString("en-US")}
-                            تومان
-                        </div>
+                </h3>
 
 
-                        <div class="quantity">
+                <p>
 
-                            <button
-                                data-action="plus"
-                                data-index="${index}">
-                                +
-                            </button>
+                    ${product.desc}
 
-                            <strong>
-                                ${item.quantity}
-                            </strong>
+                </p>
 
-                            <button
-                                data-action="minus"
-                                data-index="${index}">
-                                −
-                            </button>
 
-                        </div>
+                <div class="product-bottom">
+
+
+                    <div class="product-price">
+
+                        ${product.price}
+
+                        <small>
+                            قیمت نمایشی
+                        </small>
 
                     </div>
 
 
                     <button
-                        class="remove-item"
-                        data-action="remove"
-                        data-index="${index}">
+                        class="add-btn"
+                        onclick="
+                        addOrder(${product.id})
+                        ">
+
+                        +
+
+                    </button>
+
+
+                </div>
+
+            </article>
+
+        `).join("");
+
+}
+
+
+/* =========================
+   FILTER
+========================= */
+
+function setFilter(
+
+    filter,
+
+    button
+
+){
+
+    currentFilter =
+        filter;
+
+
+    document
+        .querySelectorAll(".filter")
+        .forEach(item => {
+
+            item.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    if(button){
+
+        button.classList.add(
+            "active"
+        );
+
+    }
+
+
+    renderProducts();
+
+}
+
+
+/* =========================
+   ADD ORDER
+========================= */
+
+function addOrder(productId){
+
+    const product =
+        products.find(
+            item =>
+            item.id === productId
+        );
+
+
+    if(!product){
+
+        return;
+
+    }
+
+
+    orders.push({
+
+        id:Date.now(),
+
+        name:product.name,
+
+        cp:product.cp,
+
+        price:product.price
+
+    });
+
+
+    saveOrders();
+
+
+    showToast(
+
+        `${product.name} به سفارشات اضافه شد 💜`
+
+    );
+
+}
+
+
+/* =========================
+   ORDERS
+========================= */
+
+function renderOrders(){
+
+    const list =
+        document.getElementById(
+            "ordersList"
+        );
+
+
+    if(!orders.length){
+
+        list.innerHTML = `
+
+            <div class="empty">
+
+                <strong>
+                    هنوز سفارشی نداری
+                </strong>
+
+                ابتدا از فروشگاه
+                یک بسته انتخاب کن.
+
+                <br><br>
+
+                <button
+                    class="btn primary"
+                    onclick="
+                    showPage('shop')
+                    ">
+
+                    مشاهده بسته‌ها
+
+                </button>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+
+        orders.map(
+            (order,index) => `
+
+            <article class="order-item">
+
+
+                <div class="order-main">
+
+                    <div class="order-icon">
+
+                        💎
+
+                    </div>
+
+
+                    <div>
+
+                        <h3>
+
+                            ${order.name}
+
+                        </h3>
+
+
+                        <p>
+
+                            سفارش شماره
+                            ${index + 1}
+
+                            •
+                            ${order.cp}
+                            CP
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="order-price">
+
+                    ${order.price}
+
+                    <span
+                        class="order-status">
+
+                        آماده پرداخت
+
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <button
+                        class="btn primary"
+                        onclick="
+                        openCheckout(${index})
+                        ">
+
+                        پرداخت
+
+                    </button>
+
+
+                    <button
+                        class="btn secondary"
+                        onclick="
+                        removeOrder(${index})
+                        ">
 
                         حذف
 
                     </button>
-                `;
 
+                </div>
 
-                cartItems.appendChild(element);
 
-            });
+            </article>
 
-        }
+        `
 
+        ).join("");
 
-        cartCount.textContent = count;
+}
 
-        cartTotal.textContent =
-            total.toLocaleString("en-US") +
-            " تومان";
 
-        checkoutTotal.textContent =
-            total.toLocaleString("en-US") +
-            " تومان";
+/* =========================
+   REMOVE
+========================= */
 
+function removeOrder(index){
 
-        checkoutBtn.disabled =
-            cart.length === 0;
-    }
-
-
-    /* ================= CART BUTTONS ================= */
-
-    cartItems.addEventListener("click", (event) => {
-
-        const button =
-            event.target.closest("button");
-
-        if (!button) return;
-
-
-        const index =
-            Number(button.dataset.index);
-
-        const action =
-            button.dataset.action;
-
-
-        if (action === "plus") {
-
-            cart[index].quantity++;
-
-        }
-
-
-        if (action === "minus") {
-
-            cart[index].quantity--;
-
-            if (cart[index].quantity <= 0) {
-
-                cart.splice(index, 1);
-
-            }
-
-        }
-
-
-        if (action === "remove") {
-
-            cart.splice(index, 1);
-
-        }
-
-
-        updateCart();
-    });
-
-
-    /* ================= PRODUCT BUTTONS ================= */
-
-    document.querySelectorAll(".add-button")
-        .forEach(button => {
-
-            button.addEventListener("click", () => {
-
-                const name =
-                    button.dataset.name;
-
-                const price =
-                    Number(button.dataset.price);
-
-                addProduct(name, price);
-
-            });
-
-        });
-
-
-    /* ================= CART OPEN/CLOSE ================= */
-
-    document
-        .getElementById("openCartBtn")
-        .addEventListener("click", openCart);
-
-
-    document
-        .getElementById("heroCartBtn")
-        .addEventListener("click", openCart);
-
-
-    document
-        .getElementById("closeCartBtn")
-        .addEventListener("click", closeCart);
-
-
-    overlay.addEventListener("click", closeCart);
-
-
-    /* ================= ESC KEY ================= */
-
-    document.addEventListener("keydown", (event) => {
-
-        if (event.key === "Escape") {
-
-            checkoutModal.classList.remove("active");
-
-            closeCart();
-
-            document.body.style.overflow = "";
-
-        }
-
-    });
-
-
-    /* ================= CHECKOUT ================= */
-
-    checkoutBtn.addEventListener("click", () => {
-
-        if (cart.length === 0) return;
-
-        checkoutModal.classList.add("active");
-
-        document.body.style.overflow = "hidden";
-
-    });
-
-
-    document
-        .getElementById("closeCheckoutBtn")
-        .addEventListener("click", () => {
-
-            checkoutModal.classList.remove("active");
-
-            document.body.style.overflow = "";
-
-        });
-
-
-    /* ================= CARD FORMAT ================= */
-
-    const cardInput =
-        document.getElementById("demoCard");
-
-
-    cardInput.addEventListener("input", () => {
-
-        let value =
-            cardInput.value
-                .replace(/\D/g, "")
-                .slice(0, 16);
-
-
-        let result = "";
-
-        for (let i = 0; i < value.length; i++) {
-
-            if (i > 0 && i % 4 === 0) {
-                result += " ";
-            }
-
-            result += value[i];
-        }
-
-        cardInput.value = result;
-
-    });
-
-
-    /* ================= OTP ================= */
-
-    const otpInputs =
-        document.querySelectorAll(".otp");
-
-
-    otpInputs.forEach((input, index) => {
-
-        input.addEventListener("input", () => {
-
-            input.value =
-                input.value.replace(/\D/g, "");
-
-            if (
-                input.value &&
-                index < otpInputs.length - 1
-            ) {
-
-                otpInputs[index + 1].focus();
-
-            }
-
-        });
-
-
-        input.addEventListener("keydown", (event) => {
-
-            if (
-                event.key === "Backspace" &&
-                !input.value &&
-                index > 0
-            ) {
-
-                otpInputs[index - 1].focus();
-
-            }
-
-        });
-
-    });
-
-
-    /* ================= DEMO PAYMENT ================= */
-
-    document
-        .getElementById("demoPayBtn")
-        .addEventListener("click", () => {
-
-            const result =
-                document.getElementById("paymentResult");
-
-
-            if (cart.length === 0) {
-
-                result.textContent =
-                    "سبد خرید خالی است.";
-
-                return;
-            }
-
-
-            result.textContent =
-                "✓ پرداخت نمایشی با موفقیت ثبت شد.";
-
-        });
-
-
-    /* ================= SEARCH ================= */
-
-    const searchInput =
-        document.getElementById("productSearch");
-
-
-    const productCards =
-        document.querySelectorAll(".product-card");
-
-
-    function filterProducts() {
-
-        const search =
-            searchInput.value
-                .trim()
-                .toLowerCase();
-
-
-        const activeFilter =
-            document.querySelector(".filter-btn.active")
-                .dataset.filter;
-
-
-        productCards.forEach(card => {
-
-            const name =
-                card.dataset.name.toLowerCase();
-
-            const category =
-                card.dataset.category;
-
-
-            const searchOK =
-                name.includes(search) ||
-                "cp".includes(search);
-
-
-            const filterOK =
-                activeFilter === "all" ||
-                category === activeFilter;
-
-
-            if (searchOK && filterOK) {
-
-                card.style.display = "";
-
-            } else {
-
-                card.style.display = "none";
-
-            }
-
-        });
-
-    }
-
-
-    searchInput.addEventListener(
-        "input",
-        filterProducts
+    orders.splice(
+        index,
+        1
     );
 
 
-    /* ================= FILTER BUTTONS ================= */
+    saveOrders();
 
-    document.querySelectorAll(".filter-btn")
-        .forEach(button => {
+    renderOrders();
 
-            button.addEventListener("click", () => {
-
-                document
-                    .querySelectorAll(".filter-btn")
-                    .forEach(btn => {
-
-                        btn.classList.remove("active");
-
-                    });
+}
 
 
-                button.classList.add("active");
+/* =========================
+   CHECKOUT
+========================= */
 
-                filterProducts();
+function openCheckout(index){
 
-            });
+    paymentIndex =
+        index;
 
-        });
+
+    showPage(
+        "checkout"
+    );
+
+}
 
 
-    /* ================= INITIAL ================= */
+/* =========================
+   CHECKOUT DATA
+========================= */
 
-    updateCart();
+function renderCheckout(){
 
-});
+    if(
+
+        paymentIndex === null
+
+        ||
+
+        !orders[paymentIndex]
+
+    ){
+
+        return;
+
+    }
+
+
+    const order =
+        orders[paymentIndex];
+
+
+    document
+        .getElementById(
+            "checkoutAmount"
+        )
+        .textContent =
+        order.price;
+
+
+    document
+        .getElementById(
+            "summaryCount"
+        )
+        .textContent =
+        "1";
+
+
+    document
+        .getElementById(
+            "checkoutItems"
+        )
+        .innerHTML = `
+
+            <div class="summary-row">
+
+                <span>
+
+                    ${order.name}
+
+                </span>
+
+                <span>
+
+                    ${order.price}
+
+                </span>
+
+            </div>
+
+        `;
+
+}
+
+
+/* =========================
+   CARD FORMAT
+========================= */
+
+function formatCard(input){
+
+    let value =
+
+        input.value
+        .replace(/\D/g,"")
+        .slice(0,16);
+
+
+    let result = "";
+
+
+    for(
+
+        let i = 0;
+
+        i < value.length;
+
+        i++
+
+    ){
+
+        if(
+
+            i > 0
+
+            &&
+
+            i % 4 === 0
+
+        ){
+
+            result += " ";
+
+        }
+
+
+        result += value[i];
+
+    }
+
+
+    input.value =
+        result;
+
+}
+
+
+/* =========================
+   PAYMENT
+========================= */
+
+function completePayment(){
+
+    if(
+
+        paymentIndex === null
+
+        ||
+
+        !orders[paymentIndex]
+
+    ){
+
+        return;
+
+    }
+
+
+    const card =
+
+        document
+        .getElementById(
+            "cardNumber"
+        )
+        .value
+        .replace(/\s/g,"");
+
+
+    const otp =
+
+        document
+        .getElementById(
+            "otp"
+        )
+        .value
+        .replace(/\D/g,"");
+
+
+    if(card.length < 16){
+
+        alert(
+            "برای نسخه نمایشی، شماره کارت ۱۶ رقمی وارد کن."
+        );
+
+        return;
+
+    }
+
+
+    if(otp.length !== 5){
+
+        alert(
+            "کد پنج رقمی را وارد کن."
+        );
+
+        return;
+
+    }
+
+
+    orders.splice(
+        paymentIndex,
+        1
+    );
+
+
+    paymentIndex =
+        null;
+
+
+    saveOrders();
+
+
+    document
+        .getElementById(
+            "cardNumber"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "otp"
+        )
+        .value = "";
+
+
+    showPage(
+        "success"
+    );
+
+}
+
+
+/* =========================
+   TOAST
+========================= */
+
+let toastTimer;
+
+
+function showToast(message){
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+
+        setTimeout(() => {
+
+            toast.classList.remove(
+                "show"
+            );
+
+        },2200);
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        updateOrderCount();
+
+        renderProducts();
+
+    }
+);
