@@ -1,425 +1,221 @@
 let cart = [];
 
-
-/* =========================
-   ADD TO CART
-========================= */
+/* ================= CART ================= */
 
 function addToCart(name, price) {
 
-    const existing =
-        cart.find(item => item.name === name);
+    const existing = cart.find(item => item.name === name);
 
     if (existing) {
-
         existing.quantity++;
-
     } else {
-
         cart.push({
             name: name,
             price: price,
             quantity: 1
         });
-
     }
 
     updateCart();
-
     openCart();
-
 }
-
-
-/* =========================
-   UPDATE CART
-========================= */
 
 function updateCart() {
 
-    const cartCount =
-        document.getElementById("cartCount");
+    const cartContainer = document.getElementById("cartItems");
+    const cartCount = document.getElementById("cartCount");
+    const cartTotal = document.getElementById("cartTotal");
 
-    const cartItems =
-        document.getElementById("cartItems");
+    if (!cartContainer) return;
 
-    const cartTotal =
-        document.getElementById("cartTotal");
-
-
-    let totalQuantity = 0;
+    let totalItems = 0;
     let totalPrice = 0;
 
-
-    cart.forEach(item => {
-
-        totalQuantity += item.quantity;
-
-        totalPrice +=
-            item.price * item.quantity;
-
-    });
-
-
-    cartCount.textContent =
-        totalQuantity;
-
-
-    cartTotal.textContent =
-        totalPrice.toLocaleString("fa-IR")
-        + " تومان";
-
+    cartContainer.innerHTML = "";
 
     if (cart.length === 0) {
 
-        cartItems.innerHTML =
-            `<p class="empty-cart">
-                هنوز بسته‌ای انتخاب نشده.
-            </p>`;
+        cartContainer.innerHTML =
+            '<p style="color:#999;text-align:center;padding:30px 0;">سبد خرید خالی است</p>';
 
-        return;
+    } else {
+
+        cart.forEach((item, index) => {
+
+            totalItems += item.quantity;
+            totalPrice += item.price * item.quantity;
+
+            const div = document.createElement("div");
+
+            div.className = "cart-item";
+
+            div.innerHTML = `
+                <div class="cart-item-info">
+                    <strong>${item.name}</strong>
+                    <span>${item.price.toLocaleString()} تومان</span>
+                    <div>
+                        تعداد: ${item.quantity}
+                    </div>
+                </div>
+
+                <div>
+                    <button onclick="changeQuantity(${index}, 1)">+</button>
+                    <button onclick="changeQuantity(${index}, -1)">−</button>
+                    <button onclick="removeItem(${index})">×</button>
+                </div>
+            `;
+
+            cartContainer.appendChild(div);
+        });
     }
 
+    if (cartCount) {
+        cartCount.textContent = totalItems;
+    }
 
-    cartItems.innerHTML = "";
-
-
-    cart.forEach((item, index) => {
-
-        const div =
-            document.createElement("div");
-
-        div.className =
-            "cart-item";
-
-
-        div.innerHTML = `
-
-            <div class="cart-item-top">
-
-                <strong>
-                    ${item.name}
-                </strong>
-
-                <span>
-                    ${(item.price * item.quantity)
-                    .toLocaleString("fa-IR")}
-                    تومان
-                </span>
-
-            </div>
-
-            <small>
-                قیمت هر بسته:
-                ${item.price.toLocaleString("fa-IR")}
-                تومان
-            </small>
-
-            <div class="cart-actions">
-
-                <button
-                    onclick="changeQuantity(${index}, 1)">
-                    +
-                </button>
-
-                <span>
-                    ${item.quantity}
-                </span>
-
-                <button
-                    onclick="changeQuantity(${index}, -1)">
-                    −
-                </button>
-
-                <button
-                    class="remove-item"
-                    onclick="removeItem(${index})">
-                    حذف
-                </button>
-
-            </div>
-
-        `;
-
-
-        cartItems.appendChild(div);
-
-    });
-
+    if (cartTotal) {
+        cartTotal.textContent =
+            totalPrice.toLocaleString() + " تومان";
+    }
 }
 
+function changeQuantity(index, amount) {
 
-/* =========================
-   CHANGE QUANTITY
-========================= */
-
-function changeQuantity(index, change) {
-
-    cart[index].quantity += change;
-
+    cart[index].quantity += amount;
 
     if (cart[index].quantity <= 0) {
-
         cart.splice(index, 1);
-
     }
 
-
     updateCart();
-
 }
-
-
-/* =========================
-   REMOVE ITEM
-========================= */
 
 function removeItem(index) {
 
     cart.splice(index, 1);
 
     updateCart();
-
 }
-
-
-/* =========================
-   CLEAR CART
-========================= */
 
 function clearCart() {
 
     cart = [];
 
     updateCart();
-
 }
 
-
-/* =========================
-   CART OPEN
-========================= */
+/* ================= CART PANEL ================= */
 
 function openCart() {
 
-    document
-        .getElementById("cartPanel")
-        .classList.add("show");
+    const panel = document.getElementById("cartPanel");
+    const overlay = document.getElementById("cartOverlay");
 
-    document
-        .getElementById("overlay")
-        .classList.add("show");
+    if (panel) {
+        panel.classList.add("open");
+    }
 
+    if (overlay) {
+        overlay.classList.add("show");
+    }
 }
-
-
-/* =========================
-   CART CLOSE
-========================= */
 
 function closeCart() {
 
-    document
-        .getElementById("cartPanel")
-        .classList.remove("show");
+    const panel = document.getElementById("cartPanel");
+    const overlay = document.getElementById("cartOverlay");
 
-    document
-        .getElementById("overlay")
-        .classList.remove("show");
+    if (panel) {
+        panel.classList.remove("open");
+    }
 
+    if (overlay) {
+        overlay.classList.remove("show");
+    }
 }
 
+/* ================= SEARCH + FILTER ================= */
 
-/* =========================
-   SEARCH
-========================= */
+let currentFilter = "all";
+let currentSearch = "";
+
+function applyProducts() {
+
+    const cards = document.querySelectorAll(".product-card");
+
+    cards.forEach(card => {
+
+        const category = card.dataset.category || "all";
+
+        const text =
+            card.textContent.toLowerCase();
+
+        const searchMatch =
+            text.includes(currentSearch.toLowerCase());
+
+        const filterMatch =
+            currentFilter === "all" ||
+            category === currentFilter;
+
+        if (searchMatch && filterMatch) {
+            card.style.display = "";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
 
 function searchProducts() {
 
-    const search =
-        document
-            .getElementById("searchInput")
-            .value
-            .trim()
-            .toLowerCase();
+    const input = document.getElementById("productSearch");
 
+    if (!input) return;
 
-    const products =
-        document.querySelectorAll(".product");
+    currentSearch = input.value;
 
-
-    let found = 0;
-
-
-    products.forEach(product => {
-
-        const name =
-            product
-                .dataset
-                .name
-                .toLowerCase();
-
-
-        if (
-            name.includes(search) ||
-            search === ""
-        ) {
-
-            product.style.display =
-                "";
-
-            found++;
-
-        } else {
-
-            product.style.display =
-                "none";
-
-        }
-
-    });
-
-
-    document
-        .getElementById("noResults")
-        .hidden = found !== 0;
-
+    applyProducts();
 }
-
-
-/* =========================
-   FILTER
-========================= */
 
 function filterProducts(category) {
 
-    const products =
-        document.querySelectorAll(".product");
+    currentFilter = category;
 
-
-    let found = 0;
-
-
-    products.forEach(product => {
-
-        const productCategory =
-            product.dataset.category;
-
-
-        if (
-            category === "all" ||
-            productCategory === category
-        ) {
-
-            product.style.display =
-                "";
-
-            found++;
-
-        } else {
-
-            product.style.display =
-                "none";
-
-        }
-
+    document.querySelectorAll(".filter-btn").forEach(button => {
+        button.classList.remove("active");
     });
 
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add("active");
+    }
 
-    document
-        .getElementById("noResults")
-        .hidden = found !== 0;
-
+    applyProducts();
 }
 
+/* ================= START ================= */
 
-/* =========================
-   START
-========================= */
+document.addEventListener("DOMContentLoaded", function () {
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+    updateCart();
 
+    const search =
+        document.getElementById("productSearch");
 
-        /* Cart */
+    if (search) {
 
-        document
-            .getElementById("cartButton")
-            .addEventListener(
-                "click",
-                openCart
-            );
+        search.addEventListener("input", function () {
 
+            currentSearch = this.value;
 
-        document
-            .getElementById("closeCart")
-            .addEventListener(
-                "click",
-                closeCart
-            );
-
-
-        document
-            .getElementById("overlay")
-            .addEventListener(
-                "click",
-                closeCart
-            );
-
-
-        document
-            .getElementById("clearCart")
-            .addEventListener(
-                "click",
-                clearCart
-            );
-
-
-        /* Search */
-
-        document
-            .getElementById("searchInput")
-            .addEventListener(
-                "input",
-                searchProducts
-            );
-
-
-        /* Filters */
-
-        const filters =
-            document.querySelectorAll(".filter");
-
-
-        filters.forEach(filter => {
-
-            filter.addEventListener(
-                "click",
-                () => {
-
-                    filters.forEach(item => {
-
-                        item.classList.remove(
-                            "active"
-                        );
-
-                    });
-
-
-                    filter.classList.add(
-                        "active"
-                    );
-
-
-                    filterProducts(
-                        filter.dataset.filter
-                    );
-
-                }
-            );
+            applyProducts();
 
         });
-
     }
-);
+
+    const overlay =
+        document.getElementById("cartOverlay");
+
+    if (overlay) {
+        overlay.addEventListener("click", closeCart);
+    }
+
+});
