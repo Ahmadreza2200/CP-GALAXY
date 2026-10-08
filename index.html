@@ -8,7 +8,10 @@
           content="width=device-width, initial-scale=1.0">
 
     <meta name="description"
-          content="CP Galaxy - فروشگاه نمایشی بسته‌های CP کالاف دیوتی موبایل">
+          content="CP Galaxy | فروشگاه مدرن و حرفه‌ای بسته‌های CP کالاف دیوتی موبایل">
+
+    <meta name="google-site-verification"
+          content="AcDKv4V6Zh6mBgX2Mjkvi9HmE8a3_jgWTPCwY3YdNx0">
 
     <title>CP Galaxy | فروشگاه CP</title>
 
@@ -21,24 +24,46 @@
 
 <header class="header">
 
-    <div class="header-inner">
+    <div class="container header-inner">
 
-        <a href="#home" class="logo">
-            CP <span>GALAXY</span>
+        <a href="#" class="logo" onclick="goHome()">
+            <span class="logo-icon">CP</span>
+            <span>GALAXY</span>
         </a>
 
         <nav class="nav">
 
-            <a href="#home">خانه</a>
-            <a href="#products">بسته‌های CP</a>
-            <a href="#features">مزایا</a>
-            <a href="#faq">سؤالات</a>
+            <button onclick="showPage('home')">
+                خانه
+            </button>
+
+            <button onclick="showPage('shop')">
+                بسته‌ها
+            </button>
+
+            <button onclick="showPage('orders')">
+                سفارشات
+            </button>
+
+            <button onclick="scrollToSection('features')">
+                امکانات
+            </button>
+
+            <button onclick="scrollToSection('faq')">
+                سوالات
+            </button>
 
         </nav>
 
-        <button class="cart-button" id="openCartBtn">
-            🛒 سبد خرید
-            <b id="cartCount">0</b>
+        <button class="orders-button"
+                onclick="showPage('orders')">
+
+            🛒 سفارشات
+
+            <span id="orderCount">
+                0
+            </span>
+
         </button>
 
     </div>
@@ -46,71 +71,102 @@
 </header>
 
 
-<!-- ================= HERO ================= -->
+<!-- ================= HOME ================= -->
 
-<main>
+<main id="homePage">
 
-<section class="hero" id="home">
+<section class="hero">
 
-    <div class="hero-content">
+    <div class="container hero-grid">
 
-        <div class="hero-badge">
-            ⚡ CP GALAXY
-        </div>
+        <div class="hero-text">
 
-        <h1>
-            دنیای جدید
-            <span>CP</span>
-            کالاف دیوتی
-        </h1>
-
-        <p>
-            بسته موردنظر خودت را انتخاب کن،
-            به سبد خرید اضافه کن و سفارش نمایشی خودت را بررسی کن.
-        </p>
-
-        <div class="hero-buttons">
-
-            <a href="#products" class="primary-button">
-                مشاهده بسته‌ها
-            </a>
-
-            <button class="secondary-button"
-                    id="heroCartBtn">
-                مشاهده سبد خرید
-            </button>
-
-        </div>
-
-        <div class="stats">
-
-            <div>
-                <strong>12+</strong>
-                <span>بسته CP</span>
+            <div class="hero-badge">
+                ✦ CP GALAXY STORE
             </div>
 
-            <div>
-                <strong>24/7</strong>
-                <span>پشتیبانی</span>
+            <h1>
+
+                دنیای جدید
+                <br>
+
+                <span>CP Galaxy</span>
+
+            </h1>
+
+            <p>
+
+                یک فروشگاه مدرن برای مشاهده،
+                انتخاب و مدیریت بسته‌های CP
+                کالاف دیوتی موبایل.
+
+            </p>
+
+            <div class="hero-buttons">
+
+                <button class="btn primary"
+                        onclick="showPage('shop')">
+
+                    مشاهده بسته‌ها
+
+                </button>
+
+                <button class="btn secondary"
+                        onclick="showPage('orders')">
+
+                    سفارشات من
+
+                </button>
+
             </div>
 
-            <div>
-                <strong>100%</strong>
-                <span>نمایشی</span>
+
+            <div class="stats">
+
+                <div>
+                    <strong>12+</strong>
+                    <span>بسته CP</span>
+                </div>
+
+                <div>
+                    <strong>24/7</strong>
+                    <span>دسترسی</span>
+                </div>
+
+                <div>
+                    <strong>⚡</strong>
+                    <span>سریع و سبک</span>
+                </div>
+
             </div>
 
         </div>
 
-    </div>
 
+        <div class="hero-visual">
 
-    <div class="hero-visual">
+            <div class="cp-orbit">
 
-        <div class="cp-orbit">
+                <div class="orbit orbit-1"></div>
 
-            <div class="cp-core">
-                <strong>CP</strong>
-                <span>GALAXY</span>
+                <div class="orbit orbit-2"></div>
+
+                <div class="cp-core">
+
+                    <strong>CP</strong>
+
+                    <span>GALAXY</span>
+
+                </div>
+
+                <div class="floating-card card-one">
+                    💎 420 CP
+                </div>
+
+                <div class="floating-card card-two">
+                    ⭐ 2400 CP
+                </div>
+
             </div>
 
         </div>
@@ -120,405 +176,89 @@
 </section>
 
 
-<!-- ================= PRODUCTS ================= -->
+<!-- ================= QUICK CATEGORIES ================= -->
 
-<section class="products-section" id="products">
+<section class="section">
 
-    <div class="section-heading">
+    <div class="container">
 
-        <span>STORE</span>
+        <div class="section-title">
 
-        <h2>
-            بسته‌های CP
-        </h2>
+            <span>EXPLORE</span>
 
-        <p>
-            بسته موردنظر خودت را پیدا کن
-        </p>
+            <h2>
+                سریع انتخاب کن
+            </h2>
 
-    </div>
-
-
-    <!-- SEARCH -->
-
-    <div class="search-area">
-
-        <label for="productSearch">
-            جستجوی بسته CP
-        </label>
-
-        <div class="search-input-wrap">
-
-            <span>⌕</span>
-
-            <input
-                id="productSearch"
-                type="text"
-                placeholder="مثلاً 420 یا 2400 یا CP..."
-                autocomplete="off"
-            >
+            <p>
+                محبوب‌ترین دسته‌های CP را ببین
+            </p>
 
         </div>
 
-    </div>
 
+        <div class="categories">
 
-    <!-- FILTER -->
+            <button onclick="setFilterFromHome('cheap')">
 
-    <div class="filters">
+                <div>💎</div>
 
-        <button class="filter-btn active"
-                data-filter="all">
-            همه
-        </button>
+                <strong>
+                    اقتصادی
+                </strong>
 
-        <button class="filter-btn"
-                data-filter="cheap">
-            اقتصادی
-        </button>
+                <small>
+                    بسته‌های کم‌هزینه
+                </small>
 
-        <button class="filter-btn"
-                data-filter="popular">
-            محبوب
-        </button>
-
-        <button class="filter-btn"
-                data-filter="special">
-            ویژه
-        </button>
-
-    </div>
-
-
-    <!-- PRODUCTS -->
-
-    <div class="products-grid" id="productsGrid">
-
-
-        <article class="product-card"
-                 data-category="cheap"
-                 data-name="80 CP">
-
-            <div class="product-top">
-                <span class="product-tag">اقتصادی</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>80 CP</h3>
-
-            <p>
-                بسته اقتصادی
-            </p>
-
-            <div class="price">
-                ۵۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="80 CP"
-                    data-price="50000">
-                افزودن به سبد
             </button>
 
-        </article>
 
+            <button onclick="setFilterFromHome('popular')">
 
-        <article class="product-card"
-                 data-category="cheap"
-                 data-name="160 CP">
+                <div>🔥</div>
 
-            <div class="product-top">
-                <span class="product-tag">اقتصادی</span>
-                <span class="cp-icon">CP</span>
-            </div>
+                <strong>
+                    محبوب
+                </strong>
 
-            <h3>160 CP</h3>
+                <small>
+                    انتخاب کاربران
+                </small>
 
-            <p>بسته اقتصادی</p>
-
-            <div class="price">
-                ۹۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="160 CP"
-                    data-price="90000">
-                افزودن به سبد
             </button>
 
-        </article>
 
+            <button onclick="setFilterFromHome('special')">
 
-        <article class="product-card"
-                 data-category="popular"
-                 data-name="240 CP">
+                <div>👑</div>
 
-            <div class="product-top">
-                <span class="product-tag">محبوب</span>
-                <span class="cp-icon">CP</span>
-            </div>
+                <strong>
+                    ویژه
+                </strong>
 
-            <h3>240 CP</h3>
+                <small>
+                    بسته‌های بزرگ
+                </small>
 
-            <p>انتخاب محبوب</p>
-
-            <div class="price">
-                ۱۳۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="240 CP"
-                    data-price="130000">
-                افزودن به سبد
             </button>
 
-        </article>
 
+            <button onclick="showPage('shop')">
 
-        <article class="product-card"
-                 data-category="popular"
-                 data-name="420 CP">
+                <div>✦</div>
 
-            <div class="product-top">
-                <span class="product-tag">محبوب</span>
-                <span class="cp-icon">CP</span>
-            </div>
+                <strong>
+                    همه بسته‌ها
+                </strong>
 
-            <h3>420 CP</h3>
+                <small>
+                    مشاهده فروشگاه
+                </small>
 
-            <p>بسته محبوب</p>
-
-            <div class="price">
-                ۲۲۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="420 CP"
-                    data-price="220000">
-                افزودن به سبد
             </button>
 
-        </article>
-
-
-        <article class="product-card"
-                 data-category="popular"
-                 data-name="500 CP">
-
-            <div class="product-top">
-                <span class="product-tag">محبوب</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>500 CP</h3>
-
-            <p>بسته محبوب</p>
-
-            <div class="price">
-                ۲۶۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="500 CP"
-                    data-price="260000">
-                افزودن به سبد
-            </button>
-
-        </article>
-
-
-        <article class="product-card"
-                 data-category="special"
-                 data-name="880 CP">
-
-            <div class="product-top">
-                <span class="product-tag">ویژه</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>880 CP</h3>
-
-            <p>بسته ویژه</p>
-
-            <div class="price">
-                ۴۲۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="880 CP"
-                    data-price="420000">
-                افزودن به سبد
-            </button>
-
-        </article>
-
-
-        <article class="product-card"
-                 data-category="special"
-                 data-name="1000 CP">
-
-            <div class="product-top">
-                <span class="product-tag">ویژه</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>1000 CP</h3>
-
-            <p>بسته ویژه</p>
-
-            <div class="price">
-                ۴۸۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="1000 CP"
-                    data-price="480000">
-                افزودن به سبد
-            </button>
-
-        </article>
-
-
-        <article class="product-card"
-                 data-category="special"
-                 data-name="1200 CP">
-
-            <div class="product-top">
-                <span class="product-tag">ویژه</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>1200 CP</h3>
-
-            <p>بسته ویژه</p>
-
-            <div class="price">
-                ۵۶۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="1200 CP"
-                    data-price="560000">
-                افزودن به سبد
-            </button>
-
-        </article>
-
-
-        <article class="product-card"
-                 data-category="special"
-                 data-name="1600 CP">
-
-            <div class="product-top">
-                <span class="product-tag">ویژه</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>1600 CP</h3>
-
-            <p>بسته ویژه</p>
-
-            <div class="price">
-                ۷۳۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="1600 CP"
-                    data-price="730000">
-                افزودن به سبد
-            </button>
-
-        </article>
-
-
-        <article class="product-card"
-                 data-category="special"
-                 data-name="2000 CP">
-
-            <div class="product-top">
-                <span class="product-tag">ویژه</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>2000 CP</h3>
-
-            <p>بسته ویژه</p>
-
-            <div class="price">
-                ۸۹۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="2000 CP"
-                    data-price="890000">
-                افزودن به سبد
-            </button>
-
-        </article>
-
-
-        <article class="product-card"
-                 data-category="special"
-                 data-name="2400 CP">
-
-            <div class="product-top">
-                <span class="product-tag">ویژه</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>2400 CP</h3>
-
-            <p>بسته ویژه</p>
-
-            <div class="price">
-                ۱,۰۵۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="2400 CP"
-                    data-price="1050000">
-                افزودن به سبد
-            </button>
-
-        </article>
-
-
-        <article class="product-card"
-                 data-category="special"
-                 data-name="3000 CP">
-
-            <div class="product-top">
-                <span class="product-tag">ویژه</span>
-                <span class="cp-icon">CP</span>
-            </div>
-
-            <h3>3000 CP</h3>
-
-            <p>بسته ویژه</p>
-
-            <div class="price">
-                ۱,۳۰۰,۰۰۰
-                <small>تومان</small>
-            </div>
-
-            <button class="add-button"
-                    data-name="3000 CP"
-                    data-price="1300000">
-                افزودن به سبد
-            </button>
-
-        </article>
+        </div>
 
     </div>
 
@@ -527,37 +267,94 @@
 
 <!-- ================= FEATURES ================= -->
 
-<section class="features-section" id="features">
+<section class="section" id="features">
 
-    <div class="section-heading">
-        <span>WHY US</span>
-        <h2>چرا CP Galaxy؟</h2>
-    </div>
+    <div class="container">
 
-    <div class="features-grid">
+        <div class="section-title">
 
-        <div class="feature">
-            <div>⚡</div>
-            <h3>سریع</h3>
-            <p>طراحی سریع و ساده برای انتخاب بسته.</p>
+            <span>WHY CP GALAXY</span>
+
+            <h2>
+                همه‌چیز مرتب و حرفه‌ای
+            </h2>
+
+            <p>
+                امکاناتی که یک فروشگاه مدرن باید داشته باشد
+            </p>
+
         </div>
 
-        <div class="feature">
-            <div>🔒</div>
-            <h3>امن</h3>
-            <p>این بخش یک نمونه نمایشی از فروشگاه است.</p>
-        </div>
 
-        <div class="feature">
-            <div>🎮</div>
-            <h3>مخصوص گیمرها</h3>
-            <p>طراحی شده با حال‌وهوای کالاف دیوتی.</p>
-        </div>
+        <div class="features">
 
-        <div class="feature">
-            <div>💎</div>
-            <h3>طراحی حرفه‌ای</h3>
-            <p>ظاهر مدرن، تیره و گیمینگ.</p>
+            <article class="feature">
+
+                <div class="feature-icon">
+                    ⚡
+                </div>
+
+                <h3>
+                    سریع
+                </h3>
+
+                <p>
+                    طراحی سبک و سریع برای استفاده راحت.
+                </p>
+
+            </article>
+
+
+            <article class="feature">
+
+                <div class="feature-icon">
+                    🔎
+                </div>
+
+                <h3>
+                    جستجوی هوشمند
+                </h3>
+
+                <p>
+                    بسته موردنظر را سریع پیدا کن.
+                </p>
+
+            </article>
+
+
+            <article class="feature">
+
+                <div class="feature-icon">
+                    🛒
+                </div>
+
+                <h3>
+                    مدیریت سفارش
+                </h3>
+
+                <p>
+                    سفارش‌هایت را در یک صفحه ببین.
+                </p>
+
+            </article>
+
+
+            <article class="feature">
+
+                <div class="feature-icon">
+                    📱
+                </div>
+
+                <h3>
+                    موبایل‌فرندلی
+                </h3>
+
+                <p>
+                    روی موبایل و کامپیوتر مرتب است.
+                </p>
+
+            </article>
+
         </div>
 
     </div>
@@ -567,35 +364,80 @@
 
 <!-- ================= FAQ ================= -->
 
-<section class="faq-section" id="faq">
+<section class="section" id="faq">
 
-    <div class="section-heading">
-        <span>FAQ</span>
-        <h2>سؤالات متداول</h2>
-    </div>
+    <div class="container faq-container">
 
-    <div class="faq-list">
+        <div class="section-title">
 
-        <details>
-            <summary>چطور یک بسته را انتخاب کنم؟</summary>
-            <p>
-                روی «افزودن به سبد» بزنید تا محصول وارد سبد خرید شود.
-            </p>
-        </details>
+            <span>FAQ</span>
 
-        <details>
-            <summary>آیا این صفحه پرداخت واقعی است؟</summary>
-            <p>
-                خیر. این نسخه صرفاً یک نمونه نمایشی از فروشگاه است.
-            </p>
-        </details>
+            <h2>
+                سوالات متداول
+            </h2>
 
-        <details>
-            <summary>مبلغ سفارش چگونه محاسبه می‌شود؟</summary>
-            <p>
-                مبلغ تمام محصولات موجود در سبد به‌صورت خودکار محاسبه می‌شود.
-            </p>
-        </details>
+        </div>
+
+
+        <div class="faq-list">
+
+            <details>
+
+                <summary>
+                    CP Galaxy چیست؟
+                </summary>
+
+                <p>
+                    یک فروشگاه نمایشی برای نمایش و مدیریت
+                    بسته‌های CP کالاف دیوتی موبایل است.
+                </p>
+
+            </details>
+
+
+            <details>
+
+                <summary>
+                    سفارشات کجا نمایش داده می‌شوند؟
+                </summary>
+
+                <p>
+                    بعد از انتخاب بسته، سفارش در قسمت
+                    «سفارشات» نمایش داده می‌شود.
+                </p>
+
+            </details>
+
+
+            <details>
+
+                <summary>
+                    آیا پرداخت واقعی است؟
+                </summary>
+
+                <p>
+                    خیر. سیستم پرداخت این نسخه صرفاً
+                    نمایشی است و به بانک یا درگاه واقعی
+                    متصل نیست.
+                </p>
+
+            </details>
+
+
+            <details>
+
+                <summary>
+                    آیا سایت روی موبایل کار می‌کند؟
+                </summary>
+
+                <p>
+                    بله. طراحی سایت برای موبایل،
+                    تبلت و کامپیوتر واکنش‌گراست.
+                </p>
+
+            </details>
+
+        </div>
 
     </div>
 
@@ -604,243 +446,417 @@
 </main>
 
 
-<!-- ================= CART OVERLAY ================= -->
+<!-- ================= SHOP PAGE ================= -->
 
-<div class="overlay" id="overlay"></div>
+<main id="shopPage" class="page hidden">
 
+<section class="section">
 
-<!-- ================= CART ================= -->
+    <div class="container">
 
-<aside class="cart-panel" id="cartPanel">
-
-    <div class="panel-header">
-
-        <div>
-            <span>YOUR CART</span>
-            <h2>سبد خرید</h2>
-        </div>
-
-        <button id="closeCartBtn"
-                class="close-btn">
-            ×
-        </button>
-
-    </div>
-
-
-    <div id="cartItems"
-         class="cart-items">
-
-        <div class="empty-cart">
-            <div>🛒</div>
-            <p>سبد خرید خالی است</p>
-        </div>
-
-    </div>
-
-
-    <div class="cart-bottom">
-
-        <div class="total-row">
-
-            <span>مجموع</span>
-
-            <strong id="cartTotal">
-                ۰ تومان
-            </strong>
-
-        </div>
-
-        <button id="checkoutBtn"
-                class="checkout-button"
-                disabled>
-            ادامه و مشاهده پرداخت
-        </button>
-
-    </div>
-
-</aside>
-
-
-<!-- ================= CHECKOUT ================= -->
-
-<div class="checkout-modal"
-     id="checkoutModal">
-
-    <div class="checkout-box">
-
-        <button class="checkout-close"
-                id="closeCheckoutBtn">
-            ×
-        </button>
-
-
-        <div class="checkout-title">
-
-            <span>CHECKOUT</span>
-
-            <h2>تکمیل سفارش</h2>
-
-            <p>
-                این قسمت فقط نمونه نمایشی است.
-            </p>
-
-        </div>
-
-
-        <!-- ORDER -->
-
-        <div class="order-summary">
+        <div class="page-header">
 
             <div>
-                <span>مبلغ سفارش</span>
 
-                <strong id="checkoutTotal">
-                    ۰ تومان
-                </strong>
+                <span>
+                    CP STORE
+                </span>
+
+                <h2>
+                    فروشگاه CP
+                </h2>
+
+                <p>
+                    بسته موردنظر خودت را پیدا کن.
+                </p>
+
+            </div>
+
+            <button class="btn secondary"
+                    onclick="showPage('home')">
+
+                ← بازگشت
+
+            </button>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <div class="search-area">
+
+            <label>
+                جستجوی بسته
+            </label>
+
+            <div class="search-box">
+
+                <span>
+                    🔎
+                </span>
+
+                <input
+                    id="searchInput"
+                    type="search"
+                    placeholder="مثلاً 420 یا 2400..."
+                    oninput="renderProducts()"
+                >
+
             </div>
 
         </div>
 
 
-        <!-- DEMO PAYMENT -->
+        <!-- FILTER -->
 
-        <div class="demo-warning">
-            ⚠ پرداخت واقعی انجام نمی‌شود؛ اطلاعات کارت واقعی وارد نکنید.
+        <div class="filters">
+
+            <button
+                class="filter active"
+                data-filter="all"
+                onclick="setFilter('all',this)">
+
+                همه
+
+            </button>
+
+            <button
+                class="filter"
+                data-filter="cheap"
+                onclick="setFilter('cheap',this)">
+
+                اقتصادی
+
+            </button>
+
+            <button
+                class="filter"
+                data-filter="popular"
+                onclick="setFilter('popular',this)">
+
+                محبوب
+
+            </button>
+
+            <button
+                class="filter"
+                data-filter="special"
+                onclick="setFilter('special',this)">
+
+                ویژه
+
+            </button>
+
         </div>
 
 
-        <div class="form-grid">
+        <div
+            id="productsGrid"
+            class="products-grid">
+        </div>
 
-            <div class="input-group full">
+    </div>
 
-                <label>
-                    شماره کارت نمایشی
-                </label>
+</section>
 
-                <input
-                    type="text"
-                    id="demoCard"
-                    maxlength="19"
-                    placeholder="6037 0000 0000 0000"
-                    inputmode="numeric"
-                >
-
-            </div>
+</main>
 
 
-            <div class="input-group">
+<!-- ================= ORDERS PAGE ================= -->
 
-                <label>
-                    CVV2 نمایشی
-                </label>
+<main id="ordersPage" class="page hidden">
 
-                <input
-                    type="text"
-                    maxlength="4"
-                    placeholder="1234"
-                    inputmode="numeric"
-                >
+<section class="section">
 
-            </div>
+    <div class="container">
 
+        <div class="page-header">
 
-            <div class="input-group">
+            <div>
 
-                <label>
-                    تاریخ انقضا
-                </label>
+                <span>
+                    MY ORDERS
+                </span>
 
-                <input
-                    type="text"
-                    maxlength="5"
-                    placeholder="12 / 09"
-                >
+                <h2>
+                    سفارشات من
+                </h2>
+
+                <p>
+                    سفارش‌های انتخاب‌شده را مدیریت کن.
+                </p>
 
             </div>
 
+            <button class="btn secondary"
+                    onclick="showPage('shop')">
 
-            <div class="input-group full">
+                + انتخاب بسته
 
-                <label>
-                    کد تأیید ۵ رقمی نمایشی
-                </label>
+            </button>
 
-                <div class="otp-row">
+        </div>
 
-                    <input
-                        class="otp"
-                        maxlength="1"
-                        inputmode="numeric"
-                    >
 
-                    <input
-                        class="otp"
-                        maxlength="1"
-                        inputmode="numeric"
-                    >
+        <div id="ordersList"></div>
 
-                    <input
-                        class="otp"
-                        maxlength="1"
-                        inputmode="numeric"
-                    >
+    </div>
 
-                    <input
-                        class="otp"
-                        maxlength="1"
-                        inputmode="numeric"
-                    >
+</section>
 
-                    <input
-                        class="otp"
-                        maxlength="1"
-                        inputmode="numeric"
-                    >
+</main>
+
+
+<!-- ================= CHECKOUT PAGE ================= -->
+
+<main id="checkoutPage" class="page hidden">
+
+<section class="section">
+
+    <div class="container checkout-container">
+
+        <div class="page-header">
+
+            <div>
+
+                <span>
+                    CHECKOUT
+                </span>
+
+                <h2>
+                    تکمیل سفارش
+                </h2>
+
+                <p>
+                    اطلاعات زیر صرفاً برای نمایش روند پرداخت هستند.
+                </p>
+
+            </div>
+
+            <button
+                class="btn secondary"
+                onclick="showPage('orders')">
+
+                ← برگشت
+
+            </button>
+
+        </div>
+
+
+        <div class="checkout-layout">
+
+
+            <!-- PAYMENT -->
+
+            <div class="payment-card">
+
+                <div class="payment-head">
+
+                    <div>
+
+                        <span>
+                            مبلغ سفارش
+                        </span>
+
+                        <strong id="checkoutAmount">
+                            ۰ تومان
+                        </strong>
+
+                    </div>
+
+                    <div class="payment-logo">
+                        CP
+                    </div>
 
                 </div>
 
+
+                <div class="form-grid">
+
+
+                    <label class="full">
+
+                        شماره کارت نمایشی
+
+                        <input
+                            id="cardNumber"
+                            maxlength="19"
+                            inputmode="numeric"
+                            placeholder="0000 0000 0000 0000"
+                            oninput="formatCard(this)"
+                        >
+
+                    </label>
+
+
+                    <label>
+
+                        CVV2
+
+                        <input
+                            maxlength="4"
+                            inputmode="numeric"
+                            placeholder="0000"
+                        >
+
+                    </label>
+
+
+                    <label>
+
+                        تاریخ انقضا
+
+                        <input
+                            maxlength="5"
+                            inputmode="numeric"
+                            placeholder="MM/YY"
+                        >
+
+                    </label>
+
+
+                    <label class="full">
+
+                        کد پنج رقمی
+
+                        <input
+                            id="otp"
+                            maxlength="5"
+                            inputmode="numeric"
+                            placeholder="12345"
+                        >
+
+                    </label>
+
+
+                </div>
+
+
+                <div class="payment-warning">
+
+                    ⚠️ این صفحه کاملاً نمایشی است.
+                    اطلاعات واقعی کارت بانکی وارد نکن.
+
+                </div>
+
+
+                <button
+                    class="btn primary full"
+                    onclick="completePayment()">
+
+                    پرداخت نمایشی
+
+                </button>
+
             </div>
 
-        </div>
 
+            <!-- SUMMARY -->
 
-        <button class="pay-button"
-                id="demoPayBtn">
+            <aside class="summary-card">
 
-            پرداخت نمایشی
+                <div class="summary-head">
 
-        </button>
+                    <strong>
+                        خلاصه سفارش
+                    </strong>
 
+                    <span id="summaryCount">
+                        0
+                    </span>
 
-        <div class="payment-result"
-             id="paymentResult">
+                </div>
+
+                <div id="checkoutItems"></div>
+
+            </aside>
+
 
         </div>
 
     </div>
 
-</div>
+</section>
+
+</main>
+
+
+<!-- ================= SUCCESS ================= -->
+
+<main id="successPage" class="page hidden">
+
+<section class="section">
+
+    <div class="container">
+
+        <div class="success-card">
+
+            <div class="success-icon">
+                ✓
+            </div>
+
+            <span>
+                SUCCESS
+            </span>
+
+            <h2>
+                سفارش با موفقیت ثبت شد
+            </h2>
+
+            <p>
+                این پیام مربوط به نسخه نمایشی CP Galaxy است.
+            </p>
+
+            <button
+                class="btn primary"
+                onclick="showPage('shop')">
+
+                بازگشت به فروشگاه
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
 
 
 <!-- ================= FOOTER ================= -->
 
 <footer>
 
-    <strong>CP GALAXY</strong>
+    <div class="container footer-inner">
 
-    <p>
-        فروشگاه نمایشی CP برای Call of Duty Mobile
-    </p>
+        <div>
 
-    <small>
-        © 2026 CP Galaxy
-    </small>
+            <strong>
+                CP GALAXY
+            </strong>
+
+            <span>
+                فروشگاه مدرن CP
+            </span>
+
+        </div>
+
+        <span>
+            © 2026 CP Galaxy
+        </span>
+
+    </div>
 
 </footer>
 
 
-<script src="k f d m.js"></script>
+<div id="toast" class="toast"></div>
+
+
+<script src="kfdm.js" defer></script>
 
 </body>
 </html>
