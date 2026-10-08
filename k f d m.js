@@ -1,221 +1,506 @@
-let cart = [];
+document.addEventListener("DOMContentLoaded", () => {
 
-/* ================= CART ================= */
+    let cart = [];
 
-function addToCart(name, price) {
+    const cartPanel =
+        document.getElementById("cartPanel");
 
-    const existing = cart.find(item => item.name === name);
+    const overlay =
+        document.getElementById("overlay");
 
-    if (existing) {
-        existing.quantity++;
-    } else {
-        cart.push({
-            name: name,
-            price: price,
-            quantity: 1
-        });
+    const checkoutModal =
+        document.getElementById("checkoutModal");
+
+    const cartItems =
+        document.getElementById("cartItems");
+
+    const cartCount =
+        document.getElementById("cartCount");
+
+    const cartTotal =
+        document.getElementById("cartTotal");
+
+    const checkoutTotal =
+        document.getElementById("checkoutTotal");
+
+    const checkoutBtn =
+        document.getElementById("checkoutBtn");
+
+
+    /* ================= OPEN CART ================= */
+
+    function openCart() {
+
+        cartPanel.classList.add("active");
+        overlay.classList.add("active");
+
+        document.body.style.overflow = "hidden";
     }
 
-    updateCart();
-    openCart();
-}
 
-function updateCart() {
+    /* ================= CLOSE CART ================= */
 
-    const cartContainer = document.getElementById("cartItems");
-    const cartCount = document.getElementById("cartCount");
-    const cartTotal = document.getElementById("cartTotal");
+    function closeCart() {
 
-    if (!cartContainer) return;
+        cartPanel.classList.remove("active");
+        overlay.classList.remove("active");
 
-    let totalItems = 0;
-    let totalPrice = 0;
+        if (!checkoutModal.classList.contains("active")) {
+            document.body.style.overflow = "";
+        }
+    }
 
-    cartContainer.innerHTML = "";
 
-    if (cart.length === 0) {
+    /* ================= ADD PRODUCT ================= */
 
-        cartContainer.innerHTML =
-            '<p style="color:#999;text-align:center;padding:30px 0;">سبد خرید خالی است</p>';
+    function addProduct(name, price) {
 
-    } else {
+        const existing =
+            cart.find(item => item.name === name);
 
-        cart.forEach((item, index) => {
+        if (existing) {
 
-            totalItems += item.quantity;
-            totalPrice += item.price * item.quantity;
+            existing.quantity++;
 
-            const div = document.createElement("div");
+        } else {
 
-            div.className = "cart-item";
+            cart.push({
+                name: name,
+                price: price,
+                quantity: 1
+            });
+        }
 
-            div.innerHTML = `
-                <div class="cart-item-info">
-                    <strong>${item.name}</strong>
-                    <span>${item.price.toLocaleString()} تومان</span>
-                    <div>
-                        تعداد: ${item.quantity}
-                    </div>
-                </div>
+        updateCart();
 
-                <div>
-                    <button onclick="changeQuantity(${index}, 1)">+</button>
-                    <button onclick="changeQuantity(${index}, -1)">−</button>
-                    <button onclick="removeItem(${index})">×</button>
+        openCart();
+    }
+
+
+    /* ================= UPDATE CART ================= */
+
+    function updateCart() {
+
+        cartItems.innerHTML = "";
+
+        let total = 0;
+        let count = 0;
+
+
+        if (cart.length === 0) {
+
+            cartItems.innerHTML = `
+                <div class="empty-cart">
+                    <div>🛒</div>
+                    <p>سبد خرید خالی است</p>
                 </div>
             `;
 
-            cartContainer.appendChild(div);
-        });
-    }
-
-    if (cartCount) {
-        cartCount.textContent = totalItems;
-    }
-
-    if (cartTotal) {
-        cartTotal.textContent =
-            totalPrice.toLocaleString() + " تومان";
-    }
-}
-
-function changeQuantity(index, amount) {
-
-    cart[index].quantity += amount;
-
-    if (cart[index].quantity <= 0) {
-        cart.splice(index, 1);
-    }
-
-    updateCart();
-}
-
-function removeItem(index) {
-
-    cart.splice(index, 1);
-
-    updateCart();
-}
-
-function clearCart() {
-
-    cart = [];
-
-    updateCart();
-}
-
-/* ================= CART PANEL ================= */
-
-function openCart() {
-
-    const panel = document.getElementById("cartPanel");
-    const overlay = document.getElementById("cartOverlay");
-
-    if (panel) {
-        panel.classList.add("open");
-    }
-
-    if (overlay) {
-        overlay.classList.add("show");
-    }
-}
-
-function closeCart() {
-
-    const panel = document.getElementById("cartPanel");
-    const overlay = document.getElementById("cartOverlay");
-
-    if (panel) {
-        panel.classList.remove("open");
-    }
-
-    if (overlay) {
-        overlay.classList.remove("show");
-    }
-}
-
-/* ================= SEARCH + FILTER ================= */
-
-let currentFilter = "all";
-let currentSearch = "";
-
-function applyProducts() {
-
-    const cards = document.querySelectorAll(".product-card");
-
-    cards.forEach(card => {
-
-        const category = card.dataset.category || "all";
-
-        const text =
-            card.textContent.toLowerCase();
-
-        const searchMatch =
-            text.includes(currentSearch.toLowerCase());
-
-        const filterMatch =
-            currentFilter === "all" ||
-            category === currentFilter;
-
-        if (searchMatch && filterMatch) {
-            card.style.display = "";
         } else {
-            card.style.display = "none";
+
+            cart.forEach((item, index) => {
+
+                const itemTotal =
+                    item.price * item.quantity;
+
+                total += itemTotal;
+
+                count += item.quantity;
+
+
+                const element =
+                    document.createElement("div");
+
+                element.className = "cart-item";
+
+
+                element.innerHTML = `
+
+                    <div>
+
+                        <h3>
+                            ${item.name}
+                        </h3>
+
+                        <div class="cart-item-price">
+                            ${item.price.toLocaleString("en-US")}
+                            تومان
+                        </div>
+
+
+                        <div class="quantity">
+
+                            <button
+                                data-action="plus"
+                                data-index="${index}">
+                                +
+                            </button>
+
+                            <strong>
+                                ${item.quantity}
+                            </strong>
+
+                            <button
+                                data-action="minus"
+                                data-index="${index}">
+                                −
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        class="remove-item"
+                        data-action="remove"
+                        data-index="${index}">
+
+                        حذف
+
+                    </button>
+                `;
+
+
+                cartItems.appendChild(element);
+
+            });
+
         }
-    });
-}
 
-function searchProducts() {
 
-    const input = document.getElementById("productSearch");
+        cartCount.textContent = count;
 
-    if (!input) return;
+        cartTotal.textContent =
+            total.toLocaleString("en-US") +
+            " تومان";
 
-    currentSearch = input.value;
+        checkoutTotal.textContent =
+            total.toLocaleString("en-US") +
+            " تومان";
 
-    applyProducts();
-}
 
-function filterProducts(category) {
-
-    currentFilter = category;
-
-    document.querySelectorAll(".filter-btn").forEach(button => {
-        button.classList.remove("active");
-    });
-
-    if (event && event.currentTarget) {
-        event.currentTarget.classList.add("active");
+        checkoutBtn.disabled =
+            cart.length === 0;
     }
 
-    applyProducts();
-}
 
-/* ================= START ================= */
+    /* ================= CART BUTTONS ================= */
 
-document.addEventListener("DOMContentLoaded", function () {
+    cartItems.addEventListener("click", (event) => {
 
-    updateCart();
+        const button =
+            event.target.closest("button");
 
-    const search =
+        if (!button) return;
+
+
+        const index =
+            Number(button.dataset.index);
+
+        const action =
+            button.dataset.action;
+
+
+        if (action === "plus") {
+
+            cart[index].quantity++;
+
+        }
+
+
+        if (action === "minus") {
+
+            cart[index].quantity--;
+
+            if (cart[index].quantity <= 0) {
+
+                cart.splice(index, 1);
+
+            }
+
+        }
+
+
+        if (action === "remove") {
+
+            cart.splice(index, 1);
+
+        }
+
+
+        updateCart();
+    });
+
+
+    /* ================= PRODUCT BUTTONS ================= */
+
+    document.querySelectorAll(".add-button")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                const name =
+                    button.dataset.name;
+
+                const price =
+                    Number(button.dataset.price);
+
+                addProduct(name, price);
+
+            });
+
+        });
+
+
+    /* ================= CART OPEN/CLOSE ================= */
+
+    document
+        .getElementById("openCartBtn")
+        .addEventListener("click", openCart);
+
+
+    document
+        .getElementById("heroCartBtn")
+        .addEventListener("click", openCart);
+
+
+    document
+        .getElementById("closeCartBtn")
+        .addEventListener("click", closeCart);
+
+
+    overlay.addEventListener("click", closeCart);
+
+
+    /* ================= ESC KEY ================= */
+
+    document.addEventListener("keydown", (event) => {
+
+        if (event.key === "Escape") {
+
+            checkoutModal.classList.remove("active");
+
+            closeCart();
+
+            document.body.style.overflow = "";
+
+        }
+
+    });
+
+
+    /* ================= CHECKOUT ================= */
+
+    checkoutBtn.addEventListener("click", () => {
+
+        if (cart.length === 0) return;
+
+        checkoutModal.classList.add("active");
+
+        document.body.style.overflow = "hidden";
+
+    });
+
+
+    document
+        .getElementById("closeCheckoutBtn")
+        .addEventListener("click", () => {
+
+            checkoutModal.classList.remove("active");
+
+            document.body.style.overflow = "";
+
+        });
+
+
+    /* ================= CARD FORMAT ================= */
+
+    const cardInput =
+        document.getElementById("demoCard");
+
+
+    cardInput.addEventListener("input", () => {
+
+        let value =
+            cardInput.value
+                .replace(/\D/g, "")
+                .slice(0, 16);
+
+
+        let result = "";
+
+        for (let i = 0; i < value.length; i++) {
+
+            if (i > 0 && i % 4 === 0) {
+                result += " ";
+            }
+
+            result += value[i];
+        }
+
+        cardInput.value = result;
+
+    });
+
+
+    /* ================= OTP ================= */
+
+    const otpInputs =
+        document.querySelectorAll(".otp");
+
+
+    otpInputs.forEach((input, index) => {
+
+        input.addEventListener("input", () => {
+
+            input.value =
+                input.value.replace(/\D/g, "");
+
+            if (
+                input.value &&
+                index < otpInputs.length - 1
+            ) {
+
+                otpInputs[index + 1].focus();
+
+            }
+
+        });
+
+
+        input.addEventListener("keydown", (event) => {
+
+            if (
+                event.key === "Backspace" &&
+                !input.value &&
+                index > 0
+            ) {
+
+                otpInputs[index - 1].focus();
+
+            }
+
+        });
+
+    });
+
+
+    /* ================= DEMO PAYMENT ================= */
+
+    document
+        .getElementById("demoPayBtn")
+        .addEventListener("click", () => {
+
+            const result =
+                document.getElementById("paymentResult");
+
+
+            if (cart.length === 0) {
+
+                result.textContent =
+                    "سبد خرید خالی است.";
+
+                return;
+            }
+
+
+            result.textContent =
+                "✓ پرداخت نمایشی با موفقیت ثبت شد.";
+
+        });
+
+
+    /* ================= SEARCH ================= */
+
+    const searchInput =
         document.getElementById("productSearch");
 
-    if (search) {
 
-        search.addEventListener("input", function () {
+    const productCards =
+        document.querySelectorAll(".product-card");
 
-            currentSearch = this.value;
 
-            applyProducts();
+    function filterProducts() {
+
+        const search =
+            searchInput.value
+                .trim()
+                .toLowerCase();
+
+
+        const activeFilter =
+            document.querySelector(".filter-btn.active")
+                .dataset.filter;
+
+
+        productCards.forEach(card => {
+
+            const name =
+                card.dataset.name.toLowerCase();
+
+            const category =
+                card.dataset.category;
+
+
+            const searchOK =
+                name.includes(search) ||
+                "cp".includes(search);
+
+
+            const filterOK =
+                activeFilter === "all" ||
+                category === activeFilter;
+
+
+            if (searchOK && filterOK) {
+
+                card.style.display = "";
+
+            } else {
+
+                card.style.display = "none";
+
+            }
 
         });
+
     }
 
-    const overlay =
-        document.getElementById("cartOverlay");
 
-    if (overlay) {
-        overlay.addEventListener("click", closeCart);
-    }
+    searchInput.addEventListener(
+        "input",
+        filterProducts
+    );
+
+
+    /* ================= FILTER BUTTONS ================= */
+
+    document.querySelectorAll(".filter-btn")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                document
+                    .querySelectorAll(".filter-btn")
+                    .forEach(btn => {
+
+                        btn.classList.remove("active");
+
+                    });
+
+
+                button.classList.add("active");
+
+                filterProducts();
+
+            });
+
+        });
+
+
+    /* ================= INITIAL ================= */
+
+    updateCart();
 
 });
