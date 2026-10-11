@@ -1,2369 +1,671 @@
+
 "use strict";
 
-/* =========================================================
-   NOVA SHOP
-   Demo E-Commerce JavaScript
-========================================================= */
+/*
+  VELORA SHOP
+  قیمت‌ها به تومان هستند.
+  قیمت‌ها به جز موردی که در توضیحات محصول مشخص شده،
+  نمونه اولیه‌اند و قبل از فروش باید بررسی شوند.
+
+  پرداخت واقعی:
+  آدرس سرور امن را پس از راه‌اندازی درگاه تنظیم کنید.
+  کلید محرمانه درگاه هرگز نباید در این فایل قرار بگیرد.
+*/
+
+const PAYMENT_START_URL = ""; // آدرس API سرور خودت را بعداً وارد کن
+const STORAGE = {
+  cart: "velora_cart_v1",
+  favorites: "velora_favorites_v1",
+  orders: "velora_orders_v1",
+  reviews: "velora_reviews_v1"
+};
+
+const products = [
+  {
+    id: 1, name: "Xiaomi Redmi Note 14 4G",
+    category: "موبایل", price: 89000000, oldPrice: 92000000,
+    icon: "📱", discount: 3,
+    specs: ["رم: ۸ گیگابایت", "حافظه: ۲۵۶ گیگابایت", "نمایشگر AMOLED با نرخ نوسازی ۱۲۰ هرتز", "باتری ۵۵۰۰ میلی‌آمپرساعت"],
+    description: "گوشی میان‌رده شیائومی؛ نسخه، گارانتی و قیمت نهایی را پیش از خرید بررسی کنید.",
+    note: "قیمت نمونه بر اساس یک فهرست فروشگاهی مشاهده‌شده؛ موجودی و قیمت روز را بررسی کنید."
+  },
+  {
+    id: 2, name: "Xiaomi Redmi Note 14 Pro 4G",
+    category: "موبایل", price: 105000000, oldPrice: 112000000,
+    icon: "📱", discount: 6,
+    specs: ["رم: ۸ گیگابایت", "حافظه: ۲۵۶ گیگابایت", "دوربین اصلی ۲۰۰ مگاپیکسل", "نمایشگر AMOLED"],
+    description: "گوشی سری Redmi Note Pro. مشخصات می‌تواند با نسخه و بازار عرضه تفاوت داشته باشد.",
+    note: "قیمت نمونه؛ پیش از فروش تأیید شود."
+  },
+  {
+    id: 3, name: "Xiaomi Redmi Note 14 Pro 5G",
+    category: "موبایل", price: 135000000, oldPrice: 145000000,
+    icon: "📱", discount: 7,
+    specs: ["رم: ۱۲ گیگابایت", "حافظه: ۲۵۶ گیگابایت", "اتصال 5G", "نمایشگر AMOLED"],
+    description: "نسخه 5G با مشخصات وابسته به بازار عرضه و پیکربندی انتخابی.",
+    note: "قیمت نمونه؛ نسخه دقیق محصول را مشخص کنید."
+  },
+  {
+    id: 4, name: "Samsung Galaxy A56 5G",
+    category: "موبایل", price: 155000000, oldPrice: 165000000,
+    icon: "📱", discount: 6,
+    specs: ["رم و حافظه: وابسته به نسخه", "نمایشگر Super AMOLED", "دوربین چندگانه", "اتصال 5G"],
+    description: "گوشی سری Galaxy A سامسونگ.",
+    note: "قیمت نمونه؛ نسخه حافظه و گارانتی باید تأیید شود."
+  },
+  {
+    id: 5, name: "Apple iPhone 16",
+    category: "موبایل", price: 190000000, oldPrice: 199000000,
+    icon: "📱", discount: 5,
+    specs: ["حافظه: ۱۲۸ گیگابایت در این پیکربندی نمونه", "تراشه سری A", "Face ID", "دوربین اصلی دوگانه"],
+    description: "آیفون ۱۶؛ وضعیت رجیستری، پارت‌نامبر و گارانتی را قبل از فروش مشخص کنید.",
+    note: "قیمت نمونه؛ قیمت واقعی می‌تواند اختلاف زیادی داشته باشد."
+  },
+  {
+    id: 6, name: "Samsung Galaxy S25",
+    category: "موبایل", price: 240000000, oldPrice: 255000000,
+    icon: "📱", discount: 6,
+    specs: ["حافظه نمونه: ۲۵۶ گیگابایت", "نمایشگر Dynamic AMOLED", "دوربین چندگانه", "اتصال 5G"],
+    description: "گوشی پرچم‌دار سامسونگ.",
+    note: "قیمت نمونه؛ مشخصات و موجودی روز بررسی شود."
+  },
+  {
+    id: 7, name: "Xiaomi Redmi 14C",
+    category: "موبایل", price: 48000000, oldPrice: 51000000,
+    icon: "📱", discount: 6,
+    specs: ["رم و حافظه: وابسته به نسخه", "نمایشگر بزرگ", "باتری پرظرفیت", "دو سیم‌کارت"],
+    description: "گوشی اقتصادی شیائومی.",
+    note: "قیمت نمونه؛ نسخه دقیق را مشخص کنید."
+  },
+  {
+    id: 8, name: "Apple iPhone 15",
+    category: "موبایل", price: 145000000, oldPrice: 155000000,
+    icon: "📱", discount: 6,
+    specs: ["حافظه نمونه: ۱۲۸ گیگابایت", "نمایشگر OLED", "Face ID", "USB-C"],
+    description: "آیفون ۱۵؛ پارت‌نامبر، رجیستری و وضعیت دستگاه باید مشخص باشد.",
+    note: "قیمت نمونه؛ قبل از فروش بررسی شود."
+  },
+  {
+    id: 9, name: "Samsung Galaxy Buds FE",
+    category: "لوازم دیجیتال", price: 8500000, oldPrice: 9500000,
+    icon: "🎧", discount: 10,
+    specs: ["هدفون بی‌سیم", "حذف نویز فعال", "کیس شارژ", "اتصال بلوتوث"],
+    description: "هدفون بی‌سیم سامسونگ.",
+    note: "قیمت نمونه؛ اصالت و گارانتی بررسی شود."
+  },
+  {
+    id: 10, name: "Apple AirPods 4",
+    category: "لوازم دیجیتال", price: 15000000, oldPrice: 16500000,
+    icon: "🎧", discount: 9,
+    specs: ["هدفون بی‌سیم", "کیس شارژ USB-C", "اتصال به دستگاه‌های سازگار"],
+    description: "ایرپاد اپل؛ نسخه معمولی و نسخه دارای حذف نویز قیمت متفاوت دارند.",
+    note: "قیمت نمونه؛ نسخه محصول را دقیق انتخاب کنید."
+  },
+  {
+    id: 11, name: "Samsung 25W USB-C Charger",
+    category: "لوازم دیجیتال", price: 1800000, oldPrice: 2200000,
+    icon: "🔌", discount: 18,
+    specs: ["خروجی USB-C", "شارژ سریع سازگار", "کابل ممکن است جداگانه باشد"],
+    description: "شارژر USB-C؛ سازگاری و اصل بودن کالا را بررسی کنید.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 12, name: "Anker Power Bank 20000mAh",
+    category: "لوازم دیجیتال", price: 7500000, oldPrice: 8200000,
+    icon: "🔋", discount: 8,
+    specs: ["ظرفیت اسمی ۲۰۰۰۰ میلی‌آمپرساعت", "مدل و توان خروجی وابسته به نسخه", "پورت‌های شارژ متعدد"],
+    description: "پاوربانک انکر؛ مدل دقیق و توان خروجی باید مشخص شود.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 13, name: "Logitech M185 Mouse",
+    category: "لوازم دیجیتال", price: 1400000, oldPrice: 1600000,
+    icon: "🖱️", discount: 12,
+    specs: ["ماوس بی‌سیم", "گیرنده USB", "مناسب استفاده روزمره"],
+    description: "ماوس بی‌سیم لاجیتک.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 14, name: "Mechanical Keyboard",
+    category: "لوازم دیجیتال", price: 4500000, oldPrice: 5200000,
+    icon: "⌨️", discount: 13,
+    specs: ["نوع سوییچ وابسته به مدل", "اتصال USB", "چیدمان باید هنگام سفارش مشخص شود"],
+    description: "کیبورد مکانیکی؛ مدل دقیق را قبل از عرضه تعیین کنید.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 15, name: "Smart Watch",
+    category: "لوازم دیجیتال", price: 6500000, oldPrice: 7500000,
+    icon: "⌚", discount: 13,
+    specs: ["نمایش اعلان‌ها", "پایش فعالیت", "باتری و امکانات وابسته به مدل"],
+    description: "ساعت هوشمند؛ برند و مدل هنوز باید مشخص شوند.",
+    note: "قیمت نمونه برای محصول عمومی؛ پیش از فروش نام مدل را تکمیل کنید."
+  },
+  {
+    id: 16, name: "Portable Bluetooth Speaker",
+    category: "لوازم دیجیتال", price: 3200000, oldPrice: 3700000,
+    icon: "🔊", discount: 13,
+    specs: ["اتصال بلوتوث", "باتری داخلی", "توان و مقاومت در برابر آب وابسته به مدل"],
+    description: "بلندگوی قابل حمل؛ مدل دقیق را مشخص کنید.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 17, name: "هودی مشکی ساده",
+    category: "پوشاک", price: 1250000, oldPrice: 1500000,
+    icon: "🧥", discount: 17,
+    specs: ["رنگ: مشکی", "سایز: S تا XXL، در صورت موجودی", "جنس باید توسط فروشنده تأیید شود"],
+    description: "هودی روزمره؛ سایز و جنس واقعی را هنگام ثبت کالا وارد کنید.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 18, name: "تی‌شرت سفید ساده",
+    category: "پوشاک", price: 450000, oldPrice: 550000,
+    icon: "👕", discount: 18,
+    specs: ["رنگ: سفید", "سایزهای قابل انتخاب", "جنس: نیازمند تأیید فروشنده"],
+    description: "تی‌شرت ساده برای استفاده روزمره.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 19, name: "کتانی روزمره",
+    category: "پوشاک", price: 2200000, oldPrice: 2600000,
+    icon: "👟", discount: 15,
+    specs: ["سایز و رنگ باید انتخاب شوند", "جنس و برند وابسته به مدل"],
+    description: "کفش روزمره؛ برند و مشخصات واقعی را قبل از فروش ثبت کنید.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 20, name: "کوله‌پشتی روزمره",
+    category: "پوشاک", price: 1350000, oldPrice: 1600000,
+    icon: "🎒", discount: 15,
+    specs: ["چند محفظه", "مناسب مدرسه یا استفاده روزمره", "ابعاد وابسته به مدل"],
+    description: "کوله‌پشتی روزمره.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 21, name: "شکلات تلخ",
+    category: "خوراکی", price: 180000, oldPrice: 200000,
+    icon: "🍫", discount: 10,
+    specs: ["وزن و درصد کاکائو باید مشخص شوند", "تاریخ انقضا را بررسی کنید"],
+    description: "شکلات؛ برند، وزن و اطلاعات بسته‌بندی باید تکمیل شوند.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 22, name: "بیسکویت بسته‌ای",
+    category: "خوراکی", price: 85000, oldPrice: 95000,
+    icon: "🍪", discount: 10,
+    specs: ["وزن و برند باید مشخص شوند", "تاریخ تولید و انقضا بررسی شود"],
+    description: "بیسکویت بسته‌ای.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 23, name: "ماگ سرامیکی مشکی",
+    category: "خانه", price: 250000, oldPrice: 300000,
+    icon: "☕", discount: 16,
+    specs: ["جنس: سرامیک", "رنگ: مشکی", "ظرفیت باید مشخص شود"],
+    description: "ماگ سرامیکی ساده.",
+    note: "قیمت نمونه."
+  },
+  {
+    id: 24, name: "چراغ رومیزی",
+    category: "خانه", price: 950000, oldPrice: 1150000,
+    icon: "💡", discount: 17,
+    specs: ["نوع لامپ وابسته به مدل", "برق یا USB بسته به محصول", "ابعاد باید مشخص شود"],
+    description: "چراغ رومیزی؛ مدل و مشخصات واقعی را تکمیل کنید.",
+    note: "قیمت نمونه."
+  }
+];
+
+const demoReviews = [
+  ["کاربر نمونه ۱", 5, "ظاهر فروشگاه مرتب و استفاده از دسته‌بندی‌ها ساده است."],
+  ["کاربر نمونه ۲", 5, "دیدن قیمت و مشخصات کنار محصول خیلی کاربردی است."],
+  ["کاربر نمونه ۳", 4, "جست‌وجوی محصولات باعث می‌شود سریع‌تر گزینه‌ها را پیدا کنم."],
+  ["کاربر نمونه ۴", 5, "نمایش جزئیات محصول برای مقایسه مفید است."],
+  ["کاربر نمونه ۵", 4, "سبد خرید ساده و قابل فهم طراحی شده است."],
+  ["کاربر نمونه ۶", 5, "ظاهر تیره و مینیمال فروشگاه را دوست دارم."],
+  ["کاربر نمونه ۷", 4, "دسته‌بندی محصولات پیدا کردن کالا را آسان می‌کند."],
+  ["کاربر نمونه ۸", 5, "نمایش مبلغ نهایی سفارش ایده خوبی است."],
+  ["کاربر نمونه ۹", 4, "بخش مشخصات می‌تواند به انتخاب محصول کمک کند."],
+  ["کاربر نمونه ۱۰", 5, "طراحی سایت روی موبایل هم قابل استفاده است."],
+  ["کاربر نمونه ۱۱", 4, "فیلتر قیمت برای بررسی گزینه‌ها مفید است."],
+  ["کاربر نمونه ۱۲", 5, "صفحه محصول اطلاعات را یکجا نشان می‌دهد."],
+  ["کاربر نمونه ۱۳", 4, "امکان ذخیره علاقه‌مندی‌ها کاربردی است."],
+  ["کاربر نمونه ۱۴", 5, "فرایند آزمایشی سفارش واضح است."],
+  ["کاربر نمونه ۱۵", 4, "طراحی ساده باعث شده بخش‌های اصلی گم نشوند."],
+  ["کاربر نمونه ۱۶", 5, "مشخصات فنی گوشی‌ها در انتخاب کمک می‌کند."],
+  ["کاربر نمونه ۱۷", 4, "مرتب‌سازی قیمت‌ها ویژگی مفیدی است."],
+  ["کاربر نمونه ۱۸", 5, "رنگ‌بندی تیره و یکدست است."],
+  ["کاربر نمونه ۱۹", 4, "بخش نظرات و امتیازدهی ظاهر مناسبی دارد."],
+  ["کاربر نمونه ۲۰", 5, "فروشگاه ساختار قابل فهمی دارد."]
+];
 
 const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => [...document.querySelectorAll(selector)];
+const money = (amount) =>
+  `${Math.round(Number(amount) || 0).toLocaleString("fa-IR")} تومان`;
 
-const STORAGE = {
-    cart: "nova_cart",
-    favorites: "nova_favorites",
-    purchases: "nova_purchases",
-    recent: "nova_recent",
-    compare: "nova_compare",
-    notifications: "nova_notifications",
-    account: "nova_account"
-};
+function readStore(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return value ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+function writeStore(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
 
-/* =========================================================
-   DATA
-========================================================= */
-
-const categories = [
-    ["موبایل", "📱"],
-    ["لپ‌تاپ", "💻"],
-    ["تبلت", "📲"],
-    ["هدفون", "🎧"],
-    ["ساعت", "⌚"],
-    ["گیمینگ", "🎮"],
-    ["پوشاک", "👕"],
-    ["خانه", "🏠"],
-    ["آشپزخانه", "🍳"],
-    ["کفش", "👟"],
-    ["اسپیکر", "🔊"],
-    ["ابزار", "🛠️"]
-];
-
-const productTypes = [
-    ["موبایل", "📱"],
-    ["لپ‌تاپ", "💻"],
-    ["تبلت", "📲"],
-    ["هدفون", "🎧"],
-    ["ساعت", "⌚"],
-    ["گیمینگ", "🎮"],
-    ["مردانه", "👕"],
-    ["زنانه", "👗"],
-    ["کفش", "👟"],
-    ["خانه", "🏠"],
-    ["آشپزخانه", "🍳"],
-    ["اسپیکر", "🔊"],
-    ["ابزار", "🛠️"],
-    ["اکسسوری", "👜"]
-];
-
-const nameParts = [
-    "Pro",
-    "Ultra",
-    "Max",
-    "Plus",
-    "Prime",
-    "Air",
-    "Elite",
-    "X",
-    "Neo",
-    "Vision",
-    "Edge",
-    "Nova",
-    "One",
-    "Power",
-    "Smart"
-];
-
-const brands = [
-    "Nova",
-    "Apple",
-    "Samsung",
-    "Xiaomi",
-    "Sony",
-    "Lenovo",
-    "Asus",
-    "LG"
-];
-
-const icons = {
-    "موبایل": "📱",
-    "لپ‌تاپ": "💻",
-    "تبلت": "📲",
-    "هدفون": "🎧",
-    "ساعت": "⌚",
-    "گیمینگ": "🎮",
-    "مردانه": "👕",
-    "زنانه": "👗",
-    "کفش": "👟",
-    "خانه": "🏠",
-    "آشپزخانه": "🍳",
-    "اسپیکر": "🔊",
-    "ابزار": "🛠️",
-    "اکسسوری": "👜"
-};
-
-let products = [];
-let cart = load(STORAGE.cart, []);
-let favorites = load(STORAGE.favorites, []);
-let purchases = load(STORAGE.purchases, []);
-let recent = load(STORAGE.recent, []);
-let compareList = load(STORAGE.compare, []);
-let notifications = load(STORAGE.notifications, []);
-
-let currentPage = 1;
-const perPage = 20;
-
-let activeCategory = "all";
+let cart = readStore(STORAGE.cart, []);
+let favorites = readStore(STORAGE.favorites, []);
+let orders = readStore(STORAGE.orders, []);
+let customerReviews = readStore(STORAGE.reviews, []);
+let selectedCategory = "همه";
 let searchTerm = "";
-let currentSort = "default";
-let appliedCoupon = null;
-let captcha = "";
-let currentPaymentTotal = 0;
+let couponApplied = false;
+let currentOrder = null;
 
-let currentHero = 0;
-let heroTimer;
-
-
-/* =========================================================
-   STORAGE
-========================================================= */
-
-function load(key, fallback) {
-    try {
-        const value = localStorage.getItem(key);
-        return value ? JSON.parse(value) : fallback;
-    } catch {
-        return fallback;
-    }
+function toast(message) {
+  const el = $("#toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => el.classList.remove("show"), 2600);
 }
 
-function save(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+function safeText(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[char]);
 }
-
-
-/* =========================================================
-   PRODUCT GENERATOR
-========================================================= */
-
-function generateProducts() {
-    const result = [];
-
-    for (let i = 1; i <= 10000; i++) {
-
-        let typeIndex = (i - 1) % productTypes.length;
-        let [category, icon] = productTypes[typeIndex];
-
-        let brand = brands[(i - 1) % brands.length];
-
-        let name;
-
-        if (i === 1) {
-            name = "iPhone 1000 Pro Max";
-        } else {
-            const part = nameParts[(i * 7) % nameParts.length];
-            name = `${brand} ${category} ${100 + (i % 900)} ${part}`;
-        }
-
-        let basePrice;
-
-        if (i === 1) {
-            basePrice = 50000000;
-        } else {
-            const ranges = {
-                "موبایل": 12000000,
-                "لپ‌تاپ": 28000000,
-                "تبلت": 14000000,
-                "هدفون": 3500000,
-                "ساعت": 5000000,
-                "گیمینگ": 9000000,
-                "مردانه": 1800000,
-                "زنانه": 2200000,
-                "کفش": 2800000,
-                "خانه": 3200000,
-                "آشپزخانه": 2600000,
-                "اسپیکر": 3000000,
-                "ابزار": 2400000,
-                "اکسسوری": 1200000
-            };
-
-            const base = ranges[category] || 2000000;
-
-            basePrice =
-                base +
-                ((i * 7919) % Math.max(base, 10000000));
-        }
-
-        let discount = 0;
-
-        /*
-           تخفیف‌های دوره‌ای
-           هر 4 ساعت مجموعه تخفیف‌ها عوض می‌شود.
-        */
-        const cycle = Math.floor(Date.now() / (4 * 60 * 60 * 1000));
-
-        if ((i + cycle * 3) % 11 === 0) {
-            discount = 10 + ((i * 7) % 31);
-        }
-
-        const rating =
-            Math.round((3.5 + ((i * 13) % 15) / 10) * 10) / 10;
-
-        const stock =
-            ((i * 17) % 40) + 1;
-
-        result.push({
-            id: i,
-            name,
-            category,
-            brand,
-            icon,
-            price: Math.round(basePrice / 1000) * 1000,
-            discount,
-            rating,
-            stock,
-            sold: 100 + ((i * 47) % 9000),
-            isNew: i > 9700
-        });
-    }
-
-    return result;
-}
-
-
-/* =========================================================
-   FORMAT
-========================================================= */
-
-function toman(number) {
-    return new Intl.NumberFormat("fa-IR").format(Math.round(number)) + " تومان";
-}
-
-function englishNumber(number) {
-    return String(number);
-}
-
-
-/* =========================================================
-   PRODUCT HELPERS
-========================================================= */
-
-function discountedPrice(product) {
-    return product.price * (1 - product.discount / 100);
-}
-
-function findProduct(id) {
-    return products.find(p => p.id === Number(id));
-}
-
-function escapeHTML(text) {
-    return String(text)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-
-/* =========================================================
-   PRODUCT CARD
-========================================================= */
-
-function productCard(product) {
-
-    const isFavorite = favorites.includes(product.id);
-    const isCompared = compareList.includes(product.id);
-
-    const price = discountedPrice(product);
-
-    return `
-        <article class="product-card" data-id="${product.id}">
-
-            <div class="product-image">
-
-                ${product.discount > 0
-                    ? `<span class="discount-badge">${product.discount}% تخفیف</span>`
-                    : ""
-                }
-
-                <div class="product-actions">
-
-                    <button
-                        class="${isFavorite ? "active" : ""}"
-                        data-action="favorite"
-                        data-id="${product.id}"
-                        title="علاقه‌مندی"
-                    >
-                        ${isFavorite ? "♥" : "♡"}
-                    </button>
-
-                    <button
-                        class="${isCompared ? "active" : ""}"
-                        data-action="compare"
-                        data-id="${product.id}"
-                        title="مقایسه"
-                    >
-                        ⇄
-                    </button>
-
-                    <button
-                        data-action="quick"
-                        data-id="${product.id}"
-                        title="مشاهده سریع"
-                    >
-                        👁
-                    </button>
-
-                </div>
-
-                <span>${product.icon}</span>
-
-            </div>
-
-
-            <div class="product-info">
-
-                <span class="product-category">
-                    ${escapeHTML(product.category)}
-                </span>
-
-                <h3 class="product-name">
-                    ${escapeHTML(product.name)}
-                </h3>
-
-                <div class="rating">
-                    ★ ${product.rating}
-                    <span>(${Math.floor(product.sold / 7)})</span>
-                </div>
-
-                <div class="stock ${product.stock < 5 ? "low" : ""}">
-                    ${
-                        product.stock < 5
-                        ? `فقط ${product.stock} عدد باقی مانده`
-                        : "موجود در انبار"
-                    }
-                </div>
-
-                <div class="price-area">
-
-                    ${
-                        product.discount > 0
-                        ? `<span class="old-price">${toman(product.price)}</span>`
-                        : ""
-                    }
-
-                    <span class="new-price">
-                        ${toman(price)}
-                    </span>
-
-                </div>
-
-
-                <div class="product-buttons">
-
-                    <button
-                        class="add-cart"
-                        data-action="cart"
-                        data-id="${product.id}"
-                    >
-                        افزودن به سبد
-                    </button>
-
-                    <button
-                        class="quick-buy"
-                        data-action="buy"
-                        data-id="${product.id}"
-                        title="خرید سریع"
-                    >
-                        ⚡
-                    </button>
-
-                </div>
-
-            </div>
-
-        </article>
-    `;
-}
-
-
-/* =========================================================
-   FILTER
-========================================================= */
-
-function getFilteredProducts() {
-
-    let result = [...products];
-
-    if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-
-        result = result.filter(p =>
-            p.name.toLowerCase().includes(term) ||
-            p.category.toLowerCase().includes(term) ||
-            p.brand.toLowerCase().includes(term)
-        );
-    }
-
-    if (activeCategory !== "all") {
-        result = result.filter(p => p.category === activeCategory);
-    }
-
-    const min = Number($("#minPrice")?.value || 0);
-    const max = Number($("#maxPrice")?.value || 0);
-
-    if (min > 0) {
-        result = result.filter(p => discountedPrice(p) >= min);
-    }
-
-    if (max > 0) {
-        result = result.filter(p => discountedPrice(p) <= max);
-    }
-
-    const ratingFilters = $$(".rating-filter:checked");
-
-    if (ratingFilters.length) {
-        const minimum = Math.max(
-            ...ratingFilters.map(input => Number(input.value))
-        );
-
-        result = result.filter(p => p.rating >= minimum);
-    }
-
-    if ($("#discountFilter")?.checked) {
-        result = result.filter(p => p.discount > 0);
-    }
-
-    if ($("#stockFilter")?.checked) {
-        result = result.filter(p => p.stock > 0);
-    }
-
-    switch (currentSort) {
-
-        case "cheap":
-            result.sort((a, b) =>
-                discountedPrice(a) - discountedPrice(b)
-            );
-            break;
-
-        case "expensive":
-            result.sort((a, b) =>
-                discountedPrice(b) - discountedPrice(a)
-            );
-            break;
-
-        case "rating":
-            result.sort((a, b) => b.rating - a.rating);
-            break;
-
-        case "discount":
-            result.sort((a, b) => b.discount - a.discount);
-            break;
-
-        case "newest":
-            result.sort((a, b) => b.id - a.id);
-            break;
-
-        default:
-            break;
-    }
-
-    return result;
-}
-
-
-/* =========================================================
-   RENDER MAIN PRODUCTS
-========================================================= */
 
 function renderProducts() {
+  let list = products.filter((p) => {
+    const matchesCategory = selectedCategory === "همه" || p.category === selectedCategory;
+    const matchesSearch = `${p.name} ${p.category} ${p.specs.join(" ")}`
+      .toLowerCase().includes(searchTerm.toLowerCase());
+    const max = $("#priceFilter").value;
+    const matchesPrice = max === "all" || p.price <= Number(max);
+    return matchesCategory && matchesSearch && matchesPrice;
+  });
 
-    const grid = $("#productsGrid");
-    if (!grid) return;
+  const sort = $("#sortSelect").value;
+  if (sort === "low") list.sort((a, b) => a.price - b.price);
+  if (sort === "high") list.sort((a, b) => b.price - a.price);
+  if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
 
-    const filtered = getFilteredProducts();
-
-    const totalPages = Math.max(
-        1,
-        Math.ceil(filtered.length / perPage)
-    );
-
-    if (currentPage > totalPages) {
-        currentPage = totalPages;
-    }
-
-    const start = (currentPage - 1) * perPage;
-    const pageProducts = filtered.slice(start, start + perPage);
-
-    grid.innerHTML = pageProducts.length
-        ? pageProducts.map(productCard).join("")
-        : `<div class="compare-empty">محصولی پیدا نشد.</div>`;
-
-    $("#productsResultCount").textContent =
-        `${new Intl.NumberFormat("fa-IR").format(filtered.length)} محصول`;
-
-    renderPagination(totalPages);
+  $("#emptyState").classList.toggle("hidden", list.length > 0);
+  $("#productGrid").innerHTML = list.map((p) => `
+    <article class="product-card">
+      ${p.discount ? `<span class="discount-badge">${p.discount.toLocaleString("fa-IR")}٪ تخفیف نمونه</span>` : ""}
+      <button class="fav-btn ${favorites.includes(p.id) ? "active" : ""}"
+        data-fav="${p.id}" aria-label="افزودن به علاقه‌مندی‌ها">${favorites.includes(p.id) ? "♥" : "♡"}</button>
+      <div class="product-visual"><span aria-hidden="true">${p.icon}</span></div>
+      <div class="product-info">
+        <span class="product-category">${safeText(p.category)}</span>
+        <h3>${safeText(p.name)}</h3>
+        <div class="product-spec">${safeText(p.specs.slice(0, 2).join(" · "))}</div>
+        <div class="price-line">
+          <span class="price">${money(p.price)}</span>
+          ${p.oldPrice ? `<span class="old-price">${Number(p.oldPrice).toLocaleString("fa-IR")}</span>` : ""}
+        </div>
+        <div class="card-actions">
+          <button class="add-btn" data-add="${p.id}">افزودن به سبد</button>
+          <button class="detail-btn" data-details="${p.id}">جزئیات</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
 }
 
-
-/* =========================================================
-   PAGINATION
-========================================================= */
-
-function renderPagination(totalPages) {
-
-    const box = $("#pagination");
-    if (!box) return;
-
-    let html = "";
-
-    if (totalPages <= 1) {
-        box.innerHTML = "";
-        return;
-    }
-
-    const start = Math.max(1, currentPage - 2);
-    const end = Math.min(totalPages, start + 4);
-
-    if (currentPage > 1) {
-        html += `
-            <button data-page="${currentPage - 1}">
-                ‹
-            </button>
-        `;
-    }
-
-    for (let i = start; i <= end; i++) {
-        html += `
-            <button
-                class="${i === currentPage ? "active" : ""}"
-                data-page="${i}"
-            >
-                ${i}
-            </button>
-        `;
-    }
-
-    if (currentPage < totalPages) {
-        html += `
-            <button data-page="${currentPage + 1}">
-                ›
-            </button>
-        `;
-    }
-
-    box.innerHTML = html;
+function getProduct(id) {
+  return products.find((p) => p.id === Number(id));
 }
 
-
-/* =========================================================
-   CATEGORIES
-========================================================= */
-
-function renderCategories() {
-
-    const grid = $("#categoriesGrid");
-    if (!grid) return;
-
-    grid.innerHTML = categories.map(([name, icon]) => `
-        <button
-            class="category-card"
-            data-category-card="${escapeHTML(name)}"
-        >
-            <span class="category-icon">${icon}</span>
-            <strong>${escapeHTML(name)}</strong>
-        </button>
-    `).join("");
-
-    const filters = $("#categoryFilters");
-
-    if (filters) {
-        filters.innerHTML = `
-            <button
-                class="${activeCategory === "all" ? "active" : ""}"
-                data-filter-category="all"
-            >
-                همه محصولات
-            </button>
-        ` + categories.map(([name]) => `
-            <button
-                class="${activeCategory === name ? "active" : ""}"
-                data-filter-category="${escapeHTML(name)}"
-            >
-                ${escapeHTML(name)}
-            </button>
-        `).join("");
-    }
-}
-
-
-/* =========================================================
-   SPECIAL PRODUCT SECTIONS
-========================================================= */
-
-function renderSectionProducts() {
-
-    const discountProducts = [...products]
-        .filter(p => p.discount > 0)
-        .sort((a, b) => b.discount - a.discount)
-        .slice(0, 8);
-
-    $("#flashProducts").innerHTML =
-        discountProducts.map(productCard).join("");
-
-
-    const best = [...products]
-        .sort((a, b) => b.sold - a.sold)
-        .slice(0, 8);
-
-    $("#bestSellerProducts").innerHTML =
-        best.map(productCard).join("");
-
-
-    const rated = [...products]
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 8);
-
-    $("#topRatedProducts").innerHTML =
-        rated.map(productCard).join("");
-
-
-    const newest = [...products]
-        .filter(p => p.isNew)
-        .slice(0, 8);
-
-    $("#newProductsGrid").innerHTML =
-        newest.map(productCard).join("");
-
-
-    renderRecentlyViewed();
-}
-
-
-/* =========================================================
-   RECENT
-========================================================= */
-
-function addRecent(id) {
-
-    id = Number(id);
-
-    recent = recent.filter(x => x !== id);
-    recent.unshift(id);
-
-    recent = recent.slice(0, 8);
-
-    save(STORAGE.recent, recent);
-}
-
-function renderRecentlyViewed() {
-
-    const grid = $("#recentlyViewedGrid");
-    if (!grid) return;
-
-    const list = recent
-        .map(id => findProduct(id))
-        .filter(Boolean);
-
-    if (!list.length) {
-        grid.innerHTML = `
-            <div class="compare-empty">
-                هنوز محصولی مشاهده نکرده‌اید.
-            </div>
-        `;
-        return;
-    }
-
-    grid.innerHTML = list.map(productCard).join("");
-}
-
-
-/* =========================================================
-   FAVORITES
-========================================================= */
-
-function toggleFavorite(id) {
-
-    id = Number(id);
-
-    if (favorites.includes(id)) {
-        favorites = favorites.filter(x => x !== id);
-        showToast("از علاقه‌مندی‌ها حذف شد");
-    } else {
-        favorites.push(id);
-        showToast("به علاقه‌مندی‌ها اضافه شد", "success");
-    }
-
-    save(STORAGE.favorites, favorites);
-    updateCounts();
-    refreshVisibleCards();
-}
-
-function showFavorites() {
-
-    const list = favorites
-        .map(id => findProduct(id))
-        .filter(Boolean);
-
-    $("#productsGrid").innerHTML =
-        list.length
-        ? list.map(productCard).join("")
-        : `<div class="compare-empty">هنوز محصولی در علاقه‌مندی‌ها نیست.</div>`;
-
-    $("#productsTitle").textContent = "علاقه‌مندی‌های من";
-    $("#productsKicker").textContent = "ذخیره‌شده‌ها";
-    $("#productsResultCount").textContent =
-        `${list.length} محصول`;
-}
-
-
-/* =========================================================
-   COMPARE
-========================================================= */
-
-function toggleCompare(id) {
-
-    id = Number(id);
-
-    if (compareList.includes(id)) {
-        compareList = compareList.filter(x => x !== id);
-        showToast("از مقایسه حذف شد");
-    } else {
-
-        if (compareList.length >= 4) {
-            showToast("حداکثر ۴ محصول قابل مقایسه است", "error");
-            return;
-        }
-
-        compareList.push(id);
-        showToast("به مقایسه اضافه شد", "success");
-    }
-
-    save(STORAGE.compare, compareList);
-    updateCounts();
-    refreshVisibleCards();
-}
-
-function renderCompare() {
-
-    const box = $("#compareContent");
-
-    const list = compareList
-        .map(id => findProduct(id))
-        .filter(Boolean);
-
-    if (!list.length) {
-        box.innerHTML = `
-            <div class="compare-empty">
-                محصولی برای مقایسه انتخاب نشده است.
-            </div>
-        `;
-        return;
-    }
-
-    box.innerHTML = `
-        <table class="compare-table">
-
-            <tr>
-                <th>ویژگی</th>
-                ${list.map(p => `<th>${escapeHTML(p.name)}</th>`).join("")}
-            </tr>
-
-            <tr>
-                <td>دسته</td>
-                ${list.map(p => `<td>${p.category}</td>`).join("")}
-            </tr>
-
-            <tr>
-                <td>برند</td>
-                ${list.map(p => `<td>${p.brand}</td>`).join("")}
-            </tr>
-
-            <tr>
-                <td>امتیاز</td>
-                ${list.map(p => `<td>★ ${p.rating}</td>`).join("")}
-            </tr>
-
-            <tr>
-                <td>تخفیف</td>
-                ${list.map(p => `<td>${p.discount}%</td>`).join("")}
-            </tr>
-
-            <tr>
-                <td>قیمت</td>
-                ${list.map(p => `<td>${toman(discountedPrice(p))}</td>`).join("")}
-            </tr>
-
-        </table>
-    `;
-}
-
-
-/* =========================================================
-   CART
-========================================================= */
-
-function addToCart(id, quantity = 1) {
-
-    id = Number(id);
-
-    const product = findProduct(id);
-    if (!product) return;
-
-    const existing = cart.find(item => item.id === id);
-
-    if (existing) {
-        existing.quantity += quantity;
-    } else {
-        cart.push({
-            id,
-            quantity
-        });
-    }
-
-    save(STORAGE.cart, cart);
-    updateCounts();
-    renderCart();
-
-    showToast(
-        `${product.name} به سبد خرید اضافه شد`,
-        "success"
-    );
-}
-
-function changeQuantity(id, amount) {
-
-    const item = cart.find(x => x.id === Number(id));
-    if (!item) return;
-
-    item.quantity += amount;
-
-    if (item.quantity <= 0) {
-        cart = cart.filter(x => x.id !== Number(id));
-    }
-
-    save(STORAGE.cart, cart);
-    updateCounts();
-    renderCart();
+function addToCart(id) {
+  const product = getProduct(id);
+  if (!product) return;
+  const item = cart.find((x) => x.id === product.id);
+  if (item) item.qty += 1;
+  else cart.push({ id: product.id, qty: 1 });
+  writeStore(STORAGE.cart, cart);
+  renderCart();
+  toast("محصول به سبد خرید اضافه شد.");
 }
 
 function cartSubtotal() {
-
-    return cart.reduce((sum, item) => {
-
-        const product = findProduct(item.id);
-
-        if (!product) return sum;
-
-        return sum +
-            discountedPrice(product) * item.quantity;
-
-    }, 0);
+  return cart.reduce((sum, item) => {
+    const p = getProduct(item.id);
+    return sum + (p ? p.price * item.qty : 0);
+  }, 0);
 }
 
-function calculateDiscount(subtotal) {
-
-    if (!appliedCoupon) return 0;
-
-    if (appliedCoupon === "NOVA10") {
-        return subtotal * .10;
-    }
-
-    if (appliedCoupon === "NOVA5") {
-        return subtotal * .05;
-    }
-
-    return 0;
+function shippingCost() {
+  const method = $("#shippingMethod")?.value || "standard";
+  return method === "pickup" ? 0 : method === "express" ? 300000 : 150000;
 }
 
-function selectedShipping() {
-
-    const selected =
-        $('input[name="shipping"]:checked');
-
-    return Number(selected?.value || 0);
+function discountAmount() {
+  return couponApplied ? Math.round(cartSubtotal() * 0.10) : 0;
 }
 
-function calculateCartTotal() {
-
-    const subtotal = cartSubtotal();
-    const discount = calculateDiscount(subtotal);
-    const shipping = cart.length ? selectedShipping() : 0;
-
-    return Math.max(
-        0,
-        subtotal - discount + shipping
-    );
+function grandTotal() {
+  return Math.max(0, cartSubtotal() - discountAmount()) + shippingCost();
 }
 
 function renderCart() {
+  $("#cartCount").textContent = cart.reduce((n, item) => n + item.qty, 0).toLocaleString("fa-IR");
 
-    const box = $("#cartItems");
-    const empty = $("#cartEmpty");
-
-    if (!cart.length) {
-
-        box.innerHTML = "";
-        empty.classList.add("show");
-
-    } else {
-
-        empty.classList.remove("show");
-
-        box.innerHTML = cart.map(item => {
-
-            const p = findProduct(item.id);
-            if (!p) return "";
-
-            return `
-                <div class="cart-item">
-
-                    <div class="cart-item-image">
-                        ${p.icon}
-                    </div>
-
-                    <div>
-
-                        <div class="cart-item-name">
-                            ${escapeHTML(p.name)}
-                        </div>
-
-                        <div class="cart-item-price">
-                            ${toman(discountedPrice(p))}
-                        </div>
-
-                        <div class="quantity-control">
-
-                            <button
-                                data-cart-action="plus"
-                                data-id="${p.id}"
-                            >
-                                +
-                            </button>
-
-                            <span>${item.quantity}</span>
-
-                            <button
-                                data-cart-action="minus"
-                                data-id="${p.id}"
-                            >
-                                −
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                    <button
-                        class="remove-item"
-                        data-cart-action="remove"
-                        data-id="${p.id}"
-                    >
-                        ×
-                    </button>
-
-                </div>
-            `;
-
-        }).join("");
-    }
-
-    const subtotal = cartSubtotal();
-    const discount = calculateDiscount(subtotal);
-    const shipping = cart.length ? selectedShipping() : 0;
-    const total = subtotal - discount + shipping;
-
-    $("#cartSubtotal").textContent = toman(subtotal);
-    $("#cartDiscount").textContent = discount
-        ? `− ${toman(discount)}`
-        : "۰ تومان";
-    $("#cartShipping").textContent = toman(shipping);
-    $("#cartTotal").textContent = toman(total);
-}
-
-
-/* =========================================================
-   COUPON
-========================================================= */
-
-function applyCoupon() {
-
-    const input = $("#couponInput");
-    const code = input.value.trim().toUpperCase();
-
-    if (code === "NOVA10" || code === "NOVA5") {
-
-        appliedCoupon = code;
-
-        showToast(
-            code === "NOVA10"
-                ? "کد ۱۰٪ با موفقیت اعمال شد"
-                : "کد ۵٪ با موفقیت اعمال شد",
-            "success"
-        );
-
-        renderCart();
-
-    } else {
-
-        appliedCoupon = null;
-        showToast(
-            "کد تخفیف معتبر نیست",
-            "error"
-        );
-    }
-}
-
-
-/* =========================================================
-   QUICK VIEW
-========================================================= */
-
-function openQuickView(id) {
-
-    const p = findProduct(id);
-    if (!p) return;
-
-    addRecent(p.id);
-
-    $("#quickViewContent").innerHTML = `
-
-        <div class="quick-product">
-
-            <div class="quick-product-image">
-                ${p.icon}
+  if (!cart.length) {
+    $("#cartItems").innerHTML = '<p class="muted">سبد خرید شما خالی است.</p>';
+  } else {
+    $("#cartItems").innerHTML = cart.map((item) => {
+      const p = getProduct(item.id);
+      if (!p) return "";
+      return `
+        <div class="cart-item">
+          <div>
+            <h3>${safeText(p.name)}</h3>
+            <p>${money(p.price)} · جمع: ${money(p.price * item.qty)}</p>
+            <div class="qty-controls">
+              <button data-qty="${p.id}" data-change="1" aria-label="افزایش تعداد">+</button>
+              <span>${item.qty.toLocaleString("fa-IR")}</span>
+              <button data-qty="${p.id}" data-change="-1" aria-label="کاهش تعداد">−</button>
+              <button class="remove-btn" data-remove="${p.id}">حذف</button>
             </div>
+          </div>
+          <span>${p.icon}</span>
+        </div>`;
+    }).join("");
+  }
 
-            <div class="quick-product-info">
-
-                <span class="section-kicker">
-                    ${escapeHTML(p.category)}
-                </span>
-
-                <h2>
-                    ${escapeHTML(p.name)}
-                </h2>
-
-                <div class="rating">
-                    ★ ${p.rating}
-                </div>
-
-                <p>
-                    این محصول یک نمونه نمایشی در فروشگاه
-                    Nova Shop است.
-                </p>
-
-                <div class="quick-specs">
-                    برند: ${p.brand}<br>
-                    موجودی: ${p.stock} عدد<br>
-                    فروش: ${p.sold} عدد
-                </div>
-
-                <div class="price-area">
-                    ${
-                        p.discount
-                        ? `<span class="old-price">${toman(p.price)}</span>`
-                        : ""
-                    }
-
-                    <span class="new-price">
-                        ${toman(discountedPrice(p))}
-                    </span>
-                </div>
-
-                <button
-                    class="primary-button full-button"
-                    data-action="cart"
-                    data-id="${p.id}"
-                >
-                    افزودن به سبد خرید
-                </button>
-
-            </div>
-
-        </div>
-    `;
-
-    openModal("quickViewModal");
-    renderRecentlyViewed();
+  $("#subtotal").textContent = money(cartSubtotal());
+  $("#discountTotal").textContent = money(discountAmount());
+  $("#shippingTotal").textContent = money(shippingCost());
+  $("#grandTotal").textContent = money(grandTotal());
+  $("#checkoutTotal").textContent = money(grandTotal());
+  $("#paymentTotal").textContent = money(grandTotal());
 }
 
-
-/* =========================================================
-   QUICK BUY
-========================================================= */
-
-function quickBuy(id) {
-
-    cart = [{
-        id: Number(id),
-        quantity: 1
-    }];
-
-    save(STORAGE.cart, cart);
-
-    appliedCoupon = null;
-
-    renderCart();
-    openDrawer("cartDrawer");
+function showOverlay() {
+  $("#overlay").classList.remove("hidden");
 }
-
-
-/* =========================================================
-   PAYMENT
-========================================================= */
-
-function openPayment() {
-
-    if (!cart.length) {
-        showToast("سبد خرید شما خالی است", "error");
-        return;
-    }
-
-    currentPaymentTotal = calculateCartTotal();
-
-    $("#paymentAmount").textContent =
-        toman(currentPaymentTotal);
-
-    createCaptcha();
-
-    $("#paymentError").textContent = "";
-
-    closeDrawer("cartDrawer");
-    openModal("paymentModal");
+function hideAll() {
+  $("#overlay").classList.add("hidden");
+  $("#cartDrawer").classList.remove("open");
+  document.querySelectorAll(".modal").forEach((el) => el.classList.add("hidden"));
 }
-
-function createCaptcha() {
-
-    captcha =
-        String(Math.floor(10000 + Math.random() * 90000));
-
-    $("#captchaCode").textContent = captcha;
-    $("#captchaInput").value = "";
+function openCart() {
+  hideAll();
+  showOverlay();
+  $("#cartDrawer").classList.add("open");
 }
-
-function validatePayment() {
-
-    const card =
-        $("#cardNumber").value.replace(/\s/g, "");
-
-    const expiry =
-        $("#cardExpiry").value.trim();
-
-    const cvv =
-        $("#cardCvv").value.trim();
-
-    const entered =
-        $("#captchaInput").value.trim();
-
-    if (!/^\d{16}$/.test(card)) {
-        return "شماره کارت باید ۱۶ رقم باشد.";
-    }
-
-    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-        return "تاریخ انقضا را به شکل MM/YY وارد کنید.";
-    }
-
-    if (!/^\d{3,4}$/.test(cvv)) {
-        return "CVV2 صحیح نیست.";
-    }
-
-    if (entered !== captcha) {
-        return "کد تأیید اشتباه است.";
-    }
-
-    return "";
-}
-
-function completePayment() {
-
-    const error = validatePayment();
-
-    if (error) {
-        $("#paymentError").textContent = error;
-        return;
-    }
-
-    const orderNumber =
-        "NOVA-" +
-        String(Date.now()).slice(-8);
-
-    const order = {
-        orderNumber,
-        date: new Date().toLocaleString("fa-IR"),
-        status: "ثبت موفق",
-        total: currentPaymentTotal,
-        items: cart.map(item => {
-
-            const p = findProduct(item.id);
-
-            return {
-                id: p.id,
-                name: p.name,
-                icon: p.icon,
-                price: discountedPrice(p),
-                quantity: item.quantity
-            };
-
-        })
-    };
-
-    purchases.unshift(order);
-
-    save(STORAGE.purchases, purchases);
-
-    cart = [];
-
-    save(STORAGE.cart, cart);
-
-    appliedCoupon = null;
-
-    $("#cardNumber").value = "";
-    $("#cardExpiry").value = "";
-    $("#cardCvv").value = "";
-    $("#captchaInput").value = "";
-
-    $("#successOrderNumber").textContent =
-        orderNumber;
-
-    $("#successOrderTotal").textContent =
-        toman(order.total);
-
-    closeModal("paymentModal");
-    renderCart();
-    updateCounts();
-
-    openModal("successModal");
-}
-
-
-/* =========================================================
-   PURCHASES
-========================================================= */
-
-function renderPurchases() {
-
-    const box = $("#purchasesList");
-
-    if (!purchases.length) {
-
-        box.innerHTML = `
-            <div class="compare-empty">
-                هنوز سفارشی ثبت نشده است.
-            </div>
-        `;
-
-        return;
-    }
-
-    box.innerHTML = purchases.map(order => `
-
-        <div class="purchase-card">
-
-            <div class="purchase-top">
-
-                <span class="purchase-number">
-                    ${order.orderNumber}
-                </span>
-
-                <span class="purchase-status">
-                    ${order.status}
-                </span>
-
-            </div>
-
-            ${order.items.map(item => `
-
-                <div class="purchase-product">
-
-                    <div class="purchase-product-icon">
-                        ${item.icon}
-                    </div>
-
-                    <div>
-                        <strong>
-                            ${escapeHTML(item.name)}
-                        </strong>
-
-                        <small>
-                            × ${item.quantity}
-                        </small>
-                    </div>
-
-                </div>
-
-            `).join("")}
-
-            <div class="purchase-total">
-                ${toman(order.total)}
-            </div>
-
-        </div>
-
-    `).join("");
-}
-
-
-/* =========================================================
-   NOTIFICATIONS
-========================================================= */
-
-function renderNotifications() {
-
-    const box = $("#notificationsList");
-
-    const defaults = [
-        {
-            icon: "⚡",
-            title: "پیشنهاد ویژه",
-            text: "تخفیف‌های ویژه Nova هر چند ساعت تغییر می‌کنند."
-        },
-        {
-            icon: "🛒",
-            title: "سبد خرید",
-            text: "محصولات مورد علاقه‌ات را به سبد اضافه کن."
-        },
-        {
-            icon: "🎟️",
-            title: "کد تخفیف",
-            text: "کد NOVA10 برای نسخه نمایشی فعال است."
-        }
-    ];
-
-    box.innerHTML = defaults.map(n => `
-
-        <div class="notification-item">
-
-            <div class="notification-icon">
-                ${n.icon}
-            </div>
-
-            <div>
-                <h4>${n.title}</h4>
-                <p>${n.text}</p>
-            </div>
-
-        </div>
-
-    `).join("");
-}
-
-
-/* =========================================================
-   MODALS
-========================================================= */
-
 function openModal(id) {
-
-    const modal = document.getElementById(id);
-    if (!modal) return;
-
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
-
-    document.body.style.overflow = "hidden";
+  hideAll();
+  showOverlay();
+  $(id).classList.remove("hidden");
 }
 
-function closeModal(id) {
-
-    const modal = document.getElementById(id);
-    if (!modal) return;
-
-    modal.classList.remove("open");
-    modal.setAttribute("aria-hidden", "true");
-
-    if (!document.querySelector(".modal.open") &&
-        !document.querySelector(".drawer.open")) {
-
-        document.body.style.overflow = "";
-    }
+function showDetails(id) {
+  const p = getProduct(id);
+  if (!p) return;
+  $("#detailsContent").innerHTML = `
+    <div class="detail-layout">
+      <div class="detail-image">${p.icon}</div>
+      <div>
+        <p class="eyebrow">${safeText(p.category)}</p>
+        <h2>${safeText(p.name)}</h2>
+        <p class="price">${money(p.price)}</p>
+        <p class="muted small">${safeText(p.note)}</p>
+        <p>${safeText(p.description)}</p>
+        <h3>مشخصات محصول</h3>
+        <ul class="spec-list">${p.specs.map((s) => `<li>${safeText(s)}</li>`).join("")}</ul>
+        <button class="primary-btn full-btn" data-add="${p.id}">افزودن به سبد خرید</button>
+      </div>
+    </div>`;
+  openModal("#detailsModal");
 }
 
-function openDrawer(id) {
-
-    const drawer = document.getElementById(id);
-    if (!drawer) return;
-
-    drawer.classList.add("open");
-    drawer.setAttribute("aria-hidden", "false");
-
-    document.body.style.overflow = "hidden";
+function applyCategory(category) {
+  selectedCategory = category;
+  document.querySelectorAll(".category-chip").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.category === category);
+  });
+  renderProducts();
 }
 
-function closeDrawer(id) {
+function renderReviews() {
+  const samples = demoReviews.map(([name, rating, text]) => ({
+    name, rating, text, sample: true
+  }));
+  const reviews = [...customerReviews, ...samples];
 
-    const drawer = document.getElementById(id);
-    if (!drawer) return;
-
-    drawer.classList.remove("open");
-    drawer.setAttribute("aria-hidden", "true");
-
-    if (!document.querySelector(".modal.open")) {
-        document.body.style.overflow = "";
-    }
+  $("#reviewGrid").innerHTML = reviews.map((r) => `
+    <article class="review-card">
+      <h3>${safeText(r.name)}</h3>
+      <div class="stars" aria-label="${r.rating} از ۵ ستاره">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</div>
+      <p>${safeText(r.text)}</p>
+      <span class="review-tag">${r.sample ? "نمونه نمایشی" : "ثبت‌شده در این مرورگر؛ تأییدنشده"}</span>
+    </article>
+  `).join("");
 }
 
-
-/* =========================================================
-   COUNTS
-========================================================= */
-
-function updateCounts() {
-
-    $("#cartCount").textContent =
-        cart.reduce((sum, item) => sum + item.quantity, 0);
-
-    $("#mobileCartCount").textContent =
-        cart.reduce((sum, item) => sum + item.quantity, 0);
-
-    $("#favoritesCount").textContent =
-        favorites.length;
-
-    $("#compareCount").textContent =
-        compareList.length;
+function renderOrders() {
+  if (!orders.length) {
+    $("#orderList").innerHTML = '<p class="muted">هنوز سفارشی در این مرورگر ثبت نشده است.</p>';
+    return;
+  }
+  $("#orderList").innerHTML = orders.map((order) => `
+    <div class="order-row">
+      <strong>سفارش ${safeText(order.id)}</strong>
+      <p>مبلغ: ${money(order.total)}</p>
+      <p>وضعیت: ${safeText(order.status)}</p>
+      <p class="muted">${safeText(order.date)}</p>
+    </div>
+  `).join("");
 }
 
+document.addEventListener("click", (event) => {
+  const target = event.target.closest("button");
+  if (!target) return;
 
-/* =========================================================
-   REFRESH
-========================================================= */
+  if (target.dataset.add) addToCart(target.dataset.add);
 
-function refreshVisibleCards() {
+  if (target.dataset.details) showDetails(target.dataset.details);
 
+  if (target.dataset.fav) {
+    const id = Number(target.dataset.fav);
+    favorites = favorites.includes(id)
+      ? favorites.filter((x) => x !== id)
+      : [...favorites, id];
+    writeStore(STORAGE.favorites, favorites);
     renderProducts();
-    renderSectionProducts();
-}
+    toast(favorites.includes(id) ? "به علاقه‌مندی‌ها اضافه شد." : "از علاقه‌مندی‌ها حذف شد.");
+  }
 
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-function showToast(message, type = "") {
-
-    const container = $("#toastContainer");
-
-    const toast = document.createElement("div");
-
-    toast.className = `toast ${type}`;
-
-    toast.textContent = message;
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = "0";
-        toast.style.transform = "translateY(10px)";
-
-        setTimeout(() => toast.remove(), 250);
-    }, 2500);
-}
-
-
-/* =========================================================
-   HERO
-========================================================= */
-
-function setupHero() {
-
-    const slides = $$(".hero-slide");
-    const dots = $("#sliderDots");
-
-    dots.innerHTML = slides.map((_, i) => `
-        <button
-            class="${i === 0 ? "active" : ""}"
-            data-slide="${i}"
-        ></button>
-    `).join("");
-
-    function showSlide(index) {
-
-        currentHero =
-            (index + slides.length) % slides.length;
-
-        slides.forEach((slide, i) => {
-            slide.classList.toggle(
-                "active",
-                i === currentHero
-            );
-        });
-
-        $$("#sliderDots button").forEach((dot, i) => {
-            dot.classList.toggle(
-                "active",
-                i === currentHero
-            );
-        });
+  if (target.dataset.qty) {
+    const id = Number(target.dataset.qty);
+    const item = cart.find((x) => x.id === id);
+    if (item) {
+      item.qty += Number(target.dataset.change);
+      if (item.qty <= 0) cart = cart.filter((x) => x.id !== id);
+      writeStore(STORAGE.cart, cart);
+      renderCart();
     }
-
-    $("#heroNext").addEventListener(
-        "click",
-        () => showSlide(currentHero + 1)
-    );
-
-    $("#heroPrev").addEventListener(
-        "click",
-        () => showSlide(currentHero - 1)
-    );
-
-    dots.addEventListener("click", e => {
-
-        const button = e.target.closest("[data-slide]");
-
-        if (!button) return;
-
-        showSlide(Number(button.dataset.slide));
-    });
-
-    heroTimer = setInterval(() => {
-        showSlide(currentHero + 1);
-    }, 6000);
-}
-
-
-/* =========================================================
-   COUNTDOWN
-========================================================= */
-
-function setupCountdown() {
-
-    function tick() {
-
-        const interval =
-            4 * 60 * 60 * 1000;
-
-        const now = Date.now();
-
-        const next =
-            Math.ceil(now / interval) * interval;
-
-        let remaining = next - now;
-
-        const hours =
-            Math.floor(remaining / 3600000);
-
-        remaining %= 3600000;
-
-        const minutes =
-            Math.floor(remaining / 60000);
-
-        const seconds =
-            Math.floor((remaining % 60000) / 1000);
-
-        $("#countdownHours").textContent =
-            String(hours).padStart(2, "0");
-
-        $("#countdownMinutes").textContent =
-            String(minutes).padStart(2, "0");
-
-        $("#countdownSeconds").textContent =
-            String(seconds).padStart(2, "0");
-
-        if (remaining <= 1000) {
-            products = generateProducts();
-            renderSectionProducts();
-        }
-    }
-
-    tick();
-
-    setInterval(tick, 1000);
-}
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-function setupSearch() {
-
-    const input = $("#searchInput");
-    const suggestions = $("#searchSuggestions");
-    const clear = $("#clearSearch");
-
-    input.addEventListener("input", () => {
-
-        searchTerm = input.value.trim();
-
-        clear.style.display =
-            searchTerm ? "block" : "none";
-
-        if (!searchTerm) {
-            suggestions.classList.remove("show");
-            currentPage = 1;
-            renderProducts();
-            return;
-        }
-
-        const matches = products
-            .filter(p =>
-                p.name.toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-            )
-            .slice(0, 6);
-
-        suggestions.innerHTML =
-            matches.map(p => `
-                <div
-                    class="suggestion"
-                    data-suggestion="${p.id}"
-                >
-                    <div class="suggestion-icon">
-                        ${p.icon}
-                    </div>
-
-                    <div>
-                        <strong>
-                            ${escapeHTML(p.name)}
-                        </strong>
-
-                        <small>
-                            ${p.category}
-                        </small>
-                    </div>
-                </div>
-            `).join("");
-
-        suggestions.classList.toggle(
-            "show",
-            matches.length > 0
-        );
-    });
-
-    clear.addEventListener("click", () => {
-        input.value = "";
-        searchTerm = "";
-        clear.style.display = "none";
-        suggestions.classList.remove("show");
-        currentPage = 1;
-        renderProducts();
-    });
-
-    $("#searchForm").addEventListener("submit", e => {
-        e.preventDefault();
-
-        searchTerm = input.value.trim();
-
-        currentPage = 1;
-
-        renderProducts();
-
-        suggestions.classList.remove("show");
-
-        $("#productsTitle").textContent =
-            searchTerm
-            ? `نتایج جستجو برای «${searchTerm}»`
-            : "همه محصولات";
-
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({ behavior: "smooth" });
-    });
-}
-
-
-/* =========================================================
-   EVENTS
-========================================================= */
-
-document.addEventListener("click", e => {
-
-    /* Product actions */
-
-    const action = e.target.closest("[data-action]");
-
-    if (action) {
-
-        const id = Number(action.dataset.id);
-
-        switch (action.dataset.action) {
-
-            case "favorite":
-                toggleFavorite(id);
-                break;
-
-            case "compare":
-                toggleCompare(id);
-                break;
-
-            case "quick":
-                openQuickView(id);
-                break;
-
-            case "cart":
-                addToCart(id);
-                break;
-
-            case "buy":
-                quickBuy(id);
-                break;
-        }
-
-        return;
-    }
-
-
-    /* Cart actions */
-
-    const cartAction =
-        e.target.closest("[data-cart-action]");
-
-    if (cartAction) {
-
-        const id =
-            Number(cartAction.dataset.id);
-
-        const type =
-            cartAction.dataset.cartAction;
-
-        if (type === "plus") {
-            changeQuantity(id, 1);
-        }
-
-        if (type === "minus") {
-            changeQuantity(id, -1);
-        }
-
-        if (type === "remove") {
-            cart = cart.filter(x => x.id !== id);
-            save(STORAGE.cart, cart);
-            updateCounts();
-            renderCart();
-        }
-
-        return;
-    }
-
-
-    /* Pagination */
-
-    const page =
-        e.target.closest("[data-page]");
-
-    if (page) {
-
-        currentPage =
-            Number(page.dataset.page);
-
-        renderProducts();
-
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({ behavior: "smooth" });
-    }
-
-
-    /* Category */
-
-    const category =
-        e.target.closest("[data-category-card]");
-
-    if (category) {
-
-        activeCategory =
-            category.dataset.categoryCard;
-
-        currentPage = 1;
-
-        renderCategories();
-        renderProducts();
-
-        $("#productsTitle").textContent =
-            activeCategory;
-
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({ behavior: "smooth" });
-    }
-
-
-    const filterCategory =
-        e.target.closest("[data-filter-category]");
-
-    if (filterCategory) {
-
-        activeCategory =
-            filterCategory.dataset.filterCategory;
-
-        currentPage = 1;
-
-        renderCategories();
-        renderProducts();
-    }
-
-
-    /* Suggestion */
-
-    const suggestion =
-        e.target.closest("[data-suggestion]");
-
-    if (suggestion) {
-
-        const product =
-            findProduct(suggestion.dataset.suggestion);
-
-        if (product) {
-            openQuickView(product.id);
-        }
-
-        $("#searchSuggestions").classList.remove("show");
-    }
-
-
-    /* Scroll */
-
-    const scroll =
-        e.target.closest("[data-scroll]");
-
-    if (scroll) {
-
-        const target =
-            document.querySelector(scroll.dataset.scroll);
-
-        target?.scrollIntoView({
-            behavior: "smooth"
-        });
-    }
-
-
-    /* Modal close */
-
-    const close =
-        e.target.closest("[data-close]");
-
-    if (close) {
-
-        const id =
-            close.dataset.close;
-
-        if (id === "cartDrawer") {
-            closeDrawer(id);
-        } else {
-            closeModal(id);
-        }
-    }
-
-
-    /* Modal overlay */
-
-    if (e.target.classList.contains("modal-overlay")) {
-
-        const modal =
-            e.target.closest(".modal");
-
-        if (modal) {
-            closeModal(modal.id);
-        }
-    }
-
-    if (e.target.classList.contains("drawer-overlay")) {
-
-        const drawer =
-            e.target.closest(".drawer");
-
-        if (drawer) {
-            closeDrawer(drawer.id);
-        }
-    }
-
-
-    /* Dashboard */
-
-    const dashboard =
-        e.target.closest("[data-dashboard]");
-
-    if (dashboard) {
-
-        const type =
-            dashboard.dataset.dashboard;
-
-        if (type === "purchases") {
-            closeModal("dashboardModal");
-            renderPurchases();
-            openModal("purchasesModal");
-        }
-
-        if (type === "favorites") {
-            closeModal("dashboardModal");
-            showFavorites();
-            document
-                .querySelector(".products-section")
-                ?.scrollIntoView({ behavior: "smooth" });
-        }
-
-        if (type === "compare") {
-            closeModal("dashboardModal");
-            renderCompare();
-            openModal("compareModal");
-        }
-
-        if (type === "recent") {
-            closeModal("dashboardModal");
-            $("#recentlySection")
-                ?.scrollIntoView({ behavior: "smooth" });
-        }
-
-        if (type === "notifications") {
-            closeModal("dashboardModal");
-            renderNotifications();
-            openModal("notificationsModal");
-        }
-
-        if (type === "orders") {
-            closeModal("dashboardModal");
-            renderPurchases();
-            openModal("purchasesModal");
-        }
-
-        if (type === "coupons") {
-            showToast("کدهای فعال: NOVA10 و NOVA5", "success");
-        }
-
-        if (type === "profile") {
-            showToast("بخش اطلاعات حساب نمایشی است");
-        }
-    }
-
-
-    /* Brands */
-
-    const brand =
-        e.target.closest("[data-brand]");
-
-    if (brand) {
-
-        searchTerm = brand.dataset.brand;
-
-        $("#searchInput").value =
-            searchTerm;
-
-        currentPage = 1;
-
-        renderProducts();
-
-        $("#productsTitle").textContent =
-            `محصولات ${searchTerm}`;
-
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({ behavior: "smooth" });
-    }
-
-
-    /* Mobile navigation */
-
-    const mobile =
-        e.target.closest("[data-mobile-nav]");
-
-    if (mobile) {
-
-        const type =
-            mobile.dataset.mobileNav;
-
-        if (type === "home") {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-        }
-
-        if (type === "categories") {
-            $("#megaMenu").classList.toggle("open");
-        }
-
-        if (type === "search") {
-            $("#searchInput").focus();
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-        }
-
-        if (type === "favorites") {
-            showFavorites();
-            document
-                .querySelector(".products-section")
-                ?.scrollIntoView({ behavior: "smooth" });
-        }
-
-        if (type === "cart") {
-            renderCart();
-            openDrawer("cartDrawer");
-        }
-    }
-});
-
-
-/* =========================================================
-   HEADER BUTTONS
-========================================================= */
-
-$("#cartButton").addEventListener("click", () => {
+  }
+
+  if (target.dataset.remove) {
+    cart = cart.filter((x) => x.id !== Number(target.dataset.remove));
+    writeStore(STORAGE.cart, cart);
     renderCart();
-    openDrawer("cartDrawer");
+  }
+
+  if (target.hasAttribute("data-close")) hideAll();
 });
 
-$("#favoritesButton").addEventListener("click", () => {
-    showFavorites();
-    document
-        .querySelector(".products-section")
-        ?.scrollIntoView({ behavior: "smooth" });
+$("#overlay").addEventListener("click", hideAll);
+$("#cartBtn").addEventListener("click", openCart);
+
+$("#accountBtn").addEventListener("click", () => {
+  renderOrders();
+  openModal("#accountModal");
 });
 
-$("#compareButton").addEventListener("click", () => {
-    renderCompare();
-    openModal("compareModal");
+$("#searchForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  searchTerm = $("#searchInput").value.trim();
+  renderProducts();
+  $("#products").scrollIntoView({ behavior: "smooth" });
 });
 
-$("#accountButton").addEventListener("click", () => {
-
-    const account =
-        load(STORAGE.account, null);
-
-    if (account) {
-        $("#dashboardUser").textContent =
-            account.email;
-
-        openModal("dashboardModal");
-    } else {
-        openModal("accountModal");
-    }
+$("#searchInput").addEventListener("input", () => {
+  searchTerm = $("#searchInput").value.trim();
+  renderProducts();
 });
 
-$("#categoriesButton").addEventListener("click", () => {
-    $("#megaMenu").classList.toggle("open");
+$("#sortSelect").addEventListener("change", renderProducts);
+$("#priceFilter").addEventListener("change", renderProducts);
+
+$("#categoryList").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-category]");
+  if (button) applyCategory(button.dataset.category);
 });
 
-$("#heroShopButton").addEventListener("click", () => {
-    document
-        .querySelector(".products-section")
-        ?.scrollIntoView({ behavior: "smooth" });
+document.querySelectorAll("[data-category-link]").forEach((link) => {
+  link.addEventListener("click", () => applyCategory(link.dataset.categoryLink));
 });
 
-$("#allCategoriesButton").addEventListener("click", () => {
-    activeCategory = "all";
-    currentPage = 1;
-    renderCategories();
-    renderProducts();
-
-    document
-        .querySelector(".products-section")
-        ?.scrollIntoView({ behavior: "smooth" });
+$("#couponBtn").addEventListener("click", () => {
+  const code = $("#couponInput").value.trim().toUpperCase();
+  if (code === "VELORA10" && cart.length) {
+    couponApplied = true;
+    $("#couponMessage").textContent = "تخفیف نمونه ۱۰٪ اعمال شد؛ پیش از فروش واقعی تنظیم شود.";
+  } else {
+    couponApplied = false;
+    $("#couponMessage").textContent = "کد معتبر نیست یا سبد خرید خالی است.";
+  }
+  renderCart();
 });
 
-$("#openFilters").addEventListener("click", () => {
-    $("#filtersPanel").classList.add("open");
+$("#checkoutBtn").addEventListener("click", () => {
+  if (!cart.length) {
+    toast("سبد خرید خالی است.");
+    return;
+  }
+  $("#shippingMethod").value = "standard";
+  renderCart();
+  openModal("#checkoutModal");
 });
 
-$("#closeFilters").addEventListener("click", () => {
-    $("#filtersPanel").classList.remove("open");
+$("#shippingMethod").addEventListener("change", renderCart);
+
+$("#checkoutForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!cart.length) {
+    toast("سبد خرید خالی است.");
+    return;
+  }
+
+  /*
+    نسخه نمایشی:
+    برای سفارش واقعی، اطلاعات سفارش باید به سرور ارسال شود.
+    اطلاعات کارت بانکی را هرگز در اینجا درخواست نکنید.
+  */
+  currentOrder = {
+    id: `VLR-${Date.now().toString().slice(-8)}`,
+    total: grandTotal(),
+    date: new Date().toLocaleDateString("fa-IR"),
+    status: "در انتظار اتصال به درگاه",
+    items: cart.map((item) => ({ ...item }))
+  };
+
+  $("#paymentTotal").textContent = money(currentOrder.total);
+  $("#gatewayMessage").textContent =
+    "سفارش نمایشی ساخته شد؛ تا زمان اتصال سرور و درگاه، پرداخت واقعی فعال نیست.";
+
+  openModal("#paymentModal");
 });
 
+$("#gatewayBtn").addEventListener("click", async () => {
+  if (!currentOrder) {
+    toast("ابتدا اطلاعات سفارش را ثبت کنید.");
+    return;
+  }
 
-/* =========================================================
-   FILTER EVENTS
-========================================================= */
+  if (!PAYMENT_START_URL) {
+    toast("درگاه هنوز متصل نشده؛ هیچ پولی دریافت نشده است.");
+    return;
+  }
 
-$("#sortSelect").addEventListener("change", e => {
-
-    currentSort = e.target.value;
-    currentPage = 1;
-
-    renderProducts();
-});
-
-["minPrice", "maxPrice"].forEach(id => {
-
-    $("#" + id).addEventListener("input", () => {
-        currentPage = 1;
-        renderProducts();
+  /*
+    این API باید متعلق به سرور خودتان باشد.
+    سرور باید مبلغ را خودش محاسبه کند، درخواست پرداخت بسازد
+    و URL امن درگاه را برگرداند. کلید درگاه فقط روی سرور باشد.
+  */
+  try {
+    const response = await fetch(PAYMENT_START_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: currentOrder.id,
+        items: currentOrder.items,
+        shippingMethod: $("#shippingMethod").value,
+        customer: {
+          name: $("#customerName").value.trim(),
+          phone: $("#customerPhone").value.trim(),
+          city: $("#customerCity").value.trim(),
+          address: $("#customerAddress").value.trim()
+        }
+      })
     });
 
-});
+    if (!response.ok) throw new Error("payment_start_failed");
+    const result = await response.json();
 
-$("#discountFilter").addEventListener("change", () => {
-    currentPage = 1;
-    renderProducts();
-});
-
-$("#stockFilter").addEventListener("change", () => {
-    currentPage = 1;
-    renderProducts();
-});
-
-$$(".rating-filter").forEach(input => {
-
-    input.addEventListener("change", () => {
-        currentPage = 1;
-        renderProducts();
-    });
-
-});
-
-$("#resetFilters").addEventListener("click", () => {
-
-    activeCategory = "all";
-
-    $("#minPrice").value = "";
-    $("#maxPrice").value = "";
-
-    $("#discountFilter").checked = false;
-    $("#stockFilter").checked = false;
-
-    $$(".rating-filter").forEach(x => {
-        x.checked = false;
-    });
-
-    $("#sortSelect").value = "default";
-
-    currentSort = "default";
-    currentPage = 1;
-
-    renderCategories();
-    renderProducts();
-});
-
-
-/* =========================================================
-   CART EVENTS
-========================================================= */
-
-$("#applyCoupon").addEventListener(
-    "click",
-    applyCoupon
-);
-
-$$('input[name="shipping"]').forEach(input => {
-
-    input.addEventListener("change", renderCart);
-
-});
-
-$("#checkoutButton").addEventListener(
-    "click",
-    openPayment
-);
-
-
-/* =========================================================
-   PAYMENT EVENTS
-========================================================= */
-
-$("#refreshCaptcha").addEventListener(
-    "click",
-    createCaptcha
-);
-
-$("#paymentForm").addEventListener(
-    "submit",
-    e => {
-        e.preventDefault();
-        completePayment();
+    if (!result.paymentUrl || !result.orderId) {
+      throw new Error("invalid_payment_response");
     }
-);
 
+    currentOrder.id = result.orderId;
+    currentOrder.status = "در انتظار پرداخت";
+    orders.unshift(currentOrder);
+    writeStore(STORAGE.orders, orders);
 
-/* =========================================================
-   ACCOUNT
-========================================================= */
-
-$("#accountForm").addEventListener(
-    "submit",
-    e => {
-
-        e.preventDefault();
-
-        const email =
-            $("#accountEmail").value.trim();
-
-        save(STORAGE.account, {
-            email
-        });
-
-        $("#dashboardUser").textContent =
-            email;
-
-        closeModal("accountModal");
-
-        openModal("dashboardModal");
-
-        showToast(
-            "ورود نمایشی با موفقیت انجام شد",
-            "success"
-        );
-    }
-);
-
-
-/* =========================================================
-   PURCHASES
-========================================================= */
-
-$("#viewPurchasesButton").addEventListener(
-    "click",
-    () => {
-
-        closeModal("successModal");
-
-        renderPurchases();
-
-        openModal("purchasesModal");
-    }
-);
-
-
-/* =========================================================
-   NEWSLETTER
-========================================================= */
-
-$("#newsletterForm").addEventListener(
-    "submit",
-    e => {
-
-        e.preventDefault();
-
-        showToast(
-            "ایمیل شما در نسخه نمایشی ثبت شد",
-            "success"
-        );
-
-        $("#newsletterEmail").value = "";
-    }
-);
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-$("#footerAccount").addEventListener(
-    "click",
-    () => $("#accountButton").click()
-);
-
-$("#footerPurchases").addEventListener(
-    "click",
-    () => {
-
-        renderPurchases();
-        openModal("purchasesModal");
-    }
-);
-
-$("#footerFavorites").addEventListener(
-    "click",
-    () => {
-
-        showFavorites();
-
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({
-                behavior: "smooth"
-            });
-    }
-);
-
-$("#footerCart").addEventListener(
-    "click",
-    () => {
-
-        renderCart();
-        openDrawer("cartDrawer");
-    }
-);
-
-
-/* =========================================================
-   HELP
-========================================================= */
-
-$$('[data-open="helpModal"]').forEach(button => {
-
-    button.addEventListener("click", () => {
-        openModal("helpModal");
-    });
-
+    window.location.assign(result.paymentUrl);
+  } catch (error) {
+    toast("اتصال پرداخت برقرار نشد؛ تنظیمات سرور را بررسی کنید.");
+  }
 });
 
-$$('[data-open="notificationsModal"]').forEach(button => {
+$("#reviewForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const name = $("#reviewName").value.trim();
+  const text = $("#reviewText").value.trim();
+  const rating = Number($("#reviewRating").value);
 
-    button.addEventListener("click", () => {
-        renderNotifications();
-        openModal("notificationsModal");
-    });
+  if (!name || !text || rating < 1 || rating > 5) {
+    toast("لطفاً اطلاعات نظر را کامل کنید.");
+    return;
+  }
 
+  customerReviews.unshift({
+    name,
+    text,
+    rating,
+    sample: false,
+    date: new Date().toISOString()
+  });
+  writeStore(STORAGE.reviews, customerReviews);
+  renderReviews();
+  $("#reviewForm").reset();
+  toast("نظر فقط در همین مرورگر ذخیره شد.");
 });
 
-$$('[data-open="ordersModal"]').forEach(button => {
-
-    button.addEventListener("click", () => {
-        renderPurchases();
-        openModal("purchasesModal");
-    });
-
+$("#newsletterForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  toast("فرم نمایشی است و هنوز ایمیلی ارسال نمی‌شود.");
+  event.target.reset();
 });
 
-
-/* =========================================================
-   ESCAPE KEY
-========================================================= */
-
-document.addEventListener("keydown", e => {
-
-    if (e.key !== "Escape") return;
-
-    $$(".modal.open").forEach(modal => {
-        closeModal(modal.id);
-    });
-
-    $$(".drawer.open").forEach(drawer => {
-        closeDrawer(drawer.id);
-    });
-
-    $("#megaMenu").classList.remove("open");
-});
-
-
-/* =========================================================
-   INIT
-========================================================= */
-
-function init() {
-
-    products = generateProducts();
-
-    renderCategories();
-
-    renderProducts();
-
-    renderSectionProducts();
-
-    renderCart();
-
-    renderPurchases();
-
-    renderNotifications();
-
-    updateCounts();
-
-    setupHero();
-
-    setupCountdown();
-
-    setupSearch();
-
-    /*
-       جلوگیری از نمایش Loading طولانی
-    */
-    setTimeout(() => {
-        $("#loadingScreen")?.classList.add("hidden");
-    }, 700);
-
-    console.log(
-        "Nova Shop initialized:",
-        products.length,
-        "products"
-    );
-}
-
-init();
+renderProducts();
+renderCart();
+renderReviews();
