@@ -1,2369 +1,2237 @@
-"use strict";
+<
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-/* =========================================================
-   NOVA SHOP
-   Demo E-Commerce JavaScript
-========================================================= */
+    <title>Nova Shop | نوا شاپ</title>
 
-const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => [...document.querySelectorAll(selector)];
+    <meta
+        name="description"
+        content="Nova Shop - فروشگاه اینترنتی مدرن با هزاران محصول"
+    >
 
-const STORAGE = {
-    cart: "nova_cart",
-    favorites: "nova_favorites",
-    purchases: "nova_purchases",
-    recent: "nova_recent",
-    compare: "nova_compare",
-    notifications: "nova_notifications",
-    account: "nova_account"
-};
+    <link rel="stylesheet" href="style.css">
+</head>
 
-/* =========================================================
-   DATA
-========================================================= */
+<body>
 
-const categories = [
-    ["موبایل", "📱"],
-    ["لپ‌تاپ", "💻"],
-    ["تبلت", "📲"],
-    ["هدفون", "🎧"],
-    ["ساعت", "⌚"],
-    ["گیمینگ", "🎮"],
-    ["پوشاک", "👕"],
-    ["خانه", "🏠"],
-    ["آشپزخانه", "🍳"],
-    ["کفش", "👟"],
-    ["اسپیکر", "🔊"],
-    ["ابزار", "🛠️"]
-];
-
-const productTypes = [
-    ["موبایل", "📱"],
-    ["لپ‌تاپ", "💻"],
-    ["تبلت", "📲"],
-    ["هدفون", "🎧"],
-    ["ساعت", "⌚"],
-    ["گیمینگ", "🎮"],
-    ["مردانه", "👕"],
-    ["زنانه", "👗"],
-    ["کفش", "👟"],
-    ["خانه", "🏠"],
-    ["آشپزخانه", "🍳"],
-    ["اسپیکر", "🔊"],
-    ["ابزار", "🛠️"],
-    ["اکسسوری", "👜"]
-];
-
-const nameParts = [
-    "Pro",
-    "Ultra",
-    "Max",
-    "Plus",
-    "Prime",
-    "Air",
-    "Elite",
-    "X",
-    "Neo",
-    "Vision",
-    "Edge",
-    "Nova",
-    "One",
-    "Power",
-    "Smart"
-];
-
-const brands = [
-    "Nova",
-    "Apple",
-    "Samsung",
-    "Xiaomi",
-    "Sony",
-    "Lenovo",
-    "Asus",
-    "LG"
-];
-
-const icons = {
-    "موبایل": "📱",
-    "لپ‌تاپ": "💻",
-    "تبلت": "📲",
-    "هدفون": "🎧",
-    "ساعت": "⌚",
-    "گیمینگ": "🎮",
-    "مردانه": "👕",
-    "زنانه": "👗",
-    "کفش": "👟",
-    "خانه": "🏠",
-    "آشپزخانه": "🍳",
-    "اسپیکر": "🔊",
-    "ابزار": "🛠️",
-    "اکسسوری": "👜"
-};
-
-let products = [];
-let cart = load(STORAGE.cart, []);
-let favorites = load(STORAGE.favorites, []);
-let purchases = load(STORAGE.purchases, []);
-let recent = load(STORAGE.recent, []);
-let compareList = load(STORAGE.compare, []);
-let notifications = load(STORAGE.notifications, []);
-
-let currentPage = 1;
-const perPage = 20;
-
-let activeCategory = "all";
-let searchTerm = "";
-let currentSort = "default";
-let appliedCoupon = null;
-let captcha = "";
-let currentPaymentTotal = 0;
-
-let currentHero = 0;
-let heroTimer;
+    <!-- =========================
+         LOADING SCREEN
+    ========================== -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-logo">NOVA</div>
+        <div class="loading-spinner"></div>
+        <p>در حال آماده‌سازی فروشگاه...</p>
+    </div>
 
 
-/* =========================================================
-   STORAGE
-========================================================= */
-
-function load(key, fallback) {
-    try {
-        const value = localStorage.getItem(key);
-        return value ? JSON.parse(value) : fallback;
-    } catch {
-        return fallback;
-    }
-}
-
-function save(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-}
+    <!-- =========================
+         TOAST
+    ========================== -->
+    <div id="toastContainer" class="toast-container"></div>
 
 
-/* =========================================================
-   PRODUCT GENERATOR
-========================================================= */
+    <!-- =========================
+         HEADER
+    ========================== -->
+    <header class="main-header">
 
-function generateProducts() {
-    const result = [];
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="container top-bar-inner">
 
-    for (let i = 1; i <= 10000; i++) {
-
-        let typeIndex = (i - 1) % productTypes.length;
-        let [category, icon] = productTypes[typeIndex];
-
-        let brand = brands[(i - 1) % brands.length];
-
-        let name;
-
-        if (i === 1) {
-            name = "iPhone 1000 Pro Max";
-        } else {
-            const part = nameParts[(i * 7) % nameParts.length];
-            name = `${brand} ${category} ${100 + (i % 900)} ${part}`;
-        }
-
-        let basePrice;
-
-        if (i === 1) {
-            basePrice = 50000000;
-        } else {
-            const ranges = {
-                "موبایل": 12000000,
-                "لپ‌تاپ": 28000000,
-                "تبلت": 14000000,
-                "هدفون": 3500000,
-                "ساعت": 5000000,
-                "گیمینگ": 9000000,
-                "مردانه": 1800000,
-                "زنانه": 2200000,
-                "کفش": 2800000,
-                "خانه": 3200000,
-                "آشپزخانه": 2600000,
-                "اسپیکر": 3000000,
-                "ابزار": 2400000,
-                "اکسسوری": 1200000
-            };
-
-            const base = ranges[category] || 2000000;
-
-            basePrice =
-                base +
-                ((i * 7919) % Math.max(base, 10000000));
-        }
-
-        let discount = 0;
-
-        /*
-           تخفیف‌های دوره‌ای
-           هر 4 ساعت مجموعه تخفیف‌ها عوض می‌شود.
-        */
-        const cycle = Math.floor(Date.now() / (4 * 60 * 60 * 1000));
-
-        if ((i + cycle * 3) % 11 === 0) {
-            discount = 10 + ((i * 7) % 31);
-        }
-
-        const rating =
-            Math.round((3.5 + ((i * 13) % 15) / 10) * 10) / 10;
-
-        const stock =
-            ((i * 17) % 40) + 1;
-
-        result.push({
-            id: i,
-            name,
-            category,
-            brand,
-            icon,
-            price: Math.round(basePrice / 1000) * 1000,
-            discount,
-            rating,
-            stock,
-            sold: 100 + ((i * 47) % 9000),
-            isNew: i > 9700
-        });
-    }
-
-    return result;
-}
-
-
-/* =========================================================
-   FORMAT
-========================================================= */
-
-function toman(number) {
-    return new Intl.NumberFormat("fa-IR").format(Math.round(number)) + " تومان";
-}
-
-function englishNumber(number) {
-    return String(number);
-}
-
-
-/* =========================================================
-   PRODUCT HELPERS
-========================================================= */
-
-function discountedPrice(product) {
-    return product.price * (1 - product.discount / 100);
-}
-
-function findProduct(id) {
-    return products.find(p => p.id === Number(id));
-}
-
-function escapeHTML(text) {
-    return String(text)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-
-/* =========================================================
-   PRODUCT CARD
-========================================================= */
-
-function productCard(product) {
-
-    const isFavorite = favorites.includes(product.id);
-    const isCompared = compareList.includes(product.id);
-
-    const price = discountedPrice(product);
-
-    return `
-        <article class="product-card" data-id="${product.id}">
-
-            <div class="product-image">
-
-                ${product.discount > 0
-                    ? `<span class="discount-badge">${product.discount}% تخفیف</span>`
-                    : ""
-                }
-
-                <div class="product-actions">
-
-                    <button
-                        class="${isFavorite ? "active" : ""}"
-                        data-action="favorite"
-                        data-id="${product.id}"
-                        title="علاقه‌مندی"
-                    >
-                        ${isFavorite ? "♥" : "♡"}
-                    </button>
-
-                    <button
-                        class="${isCompared ? "active" : ""}"
-                        data-action="compare"
-                        data-id="${product.id}"
-                        title="مقایسه"
-                    >
-                        ⇄
-                    </button>
-
-                    <button
-                        data-action="quick"
-                        data-id="${product.id}"
-                        title="مشاهده سریع"
-                    >
-                        👁
-                    </button>
-
+                <div class="top-message">
+                    خرید امن و سریع از Nova Shop
                 </div>
 
-                <span>${product.icon}</span>
+                <div class="top-links">
+                    <button type="button" data-open="ordersModal">
+                        پیگیری سفارش
+                    </button>
+
+                    <button type="button" data-open="notificationsModal">
+                        اعلان‌ها
+                    </button>
+
+                    <button type="button" data-open="helpModal">
+                        راهنما
+                    </button>
+                </div>
 
             </div>
+        </div>
 
 
-            <div class="product-info">
+        <!-- Main Header -->
+        <div class="header-main">
+            <div class="container header-main-inner">
 
-                <span class="product-category">
-                    ${escapeHTML(product.category)}
-                </span>
+                <!-- Logo -->
+                <a href="#" class="logo" id="logoHome">
+                    <span class="logo-icon">N</span>
 
-                <h3 class="product-name">
-                    ${escapeHTML(product.name)}
-                </h3>
-
-                <div class="rating">
-                    ★ ${product.rating}
-                    <span>(${Math.floor(product.sold / 7)})</span>
-                </div>
-
-                <div class="stock ${product.stock < 5 ? "low" : ""}">
-                    ${
-                        product.stock < 5
-                        ? `فقط ${product.stock} عدد باقی مانده`
-                        : "موجود در انبار"
-                    }
-                </div>
-
-                <div class="price-area">
-
-                    ${
-                        product.discount > 0
-                        ? `<span class="old-price">${toman(product.price)}</span>`
-                        : ""
-                    }
-
-                    <span class="new-price">
-                        ${toman(price)}
+                    <span class="logo-text">
+                        <strong>NOVA</strong>
+                        <small>SHOP</small>
                     </span>
+                </a>
+
+
+                <!-- Search -->
+                <div class="search-area">
+
+                    <form id="searchForm" class="search-box">
+
+                        <span class="search-icon">⌕</span>
+
+                        <input
+                            type="search"
+                            id="searchInput"
+                            placeholder="جستجوی محصول، برند یا دسته‌بندی..."
+                            autocomplete="off"
+                        >
+
+                        <button
+                            type="button"
+                            id="clearSearch"
+                            class="clear-search"
+                            aria-label="پاک کردن جستجو"
+                        >
+                            ×
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="search-button"
+                        >
+                            جستجو
+                        </button>
+
+                    </form>
+
+
+                    <!-- Live Search Suggestions -->
+                    <div
+                        id="searchSuggestions"
+                        class="search-suggestions"
+                    ></div>
 
                 </div>
 
 
-                <div class="product-buttons">
+                <!-- Header Actions -->
+                <div class="header-actions">
 
                     <button
-                        class="add-cart"
-                        data-action="cart"
-                        data-id="${product.id}"
+                        type="button"
+                        class="header-action"
+                        id="accountButton"
                     >
-                        افزودن به سبد
+                        <span class="action-icon">♙</span>
+
+                        <span>
+                            <small>حساب کاربری</small>
+                            <strong>ورود / ثبت‌نام</strong>
+                        </span>
                     </button>
 
+
                     <button
-                        class="quick-buy"
-                        data-action="buy"
-                        data-id="${product.id}"
-                        title="خرید سریع"
+                        type="button"
+                        class="header-action icon-only"
+                        id="favoritesButton"
+                        aria-label="علاقه‌مندی‌ها"
                     >
-                        ⚡
+                        <span class="action-icon">♡</span>
+                        <span
+                            id="favoritesCount"
+                            class="action-count"
+                        >
+                            0
+                        </span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="header-action icon-only"
+                        id="compareButton"
+                        aria-label="مقایسه"
+                    >
+                        <span class="action-icon">⇄</span>
+                        <span
+                            id="compareCount"
+                            class="action-count"
+                        >
+                            0
+                        </span>
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="header-action icon-only cart-action"
+                        id="cartButton"
+                        aria-label="سبد خرید"
+                    >
+                        <span class="action-icon">🛒</span>
+                        <span
+                            id="cartCount"
+                            class="action-count"
+                        >
+                            0
+                        </span>
                     </button>
 
                 </div>
 
             </div>
-
-        </article>
-    `;
-}
+        </div>
 
 
-/* =========================================================
-   FILTER
-========================================================= */
+        <!-- Navigation -->
+        <nav class="main-navigation">
+            <div class="container navigation-inner">
 
-function getFilteredProducts() {
-
-    let result = [...products];
-
-    if (searchTerm) {
-        const term = searchTerm.toLowerCase();
-
-        result = result.filter(p =>
-            p.name.toLowerCase().includes(term) ||
-            p.category.toLowerCase().includes(term) ||
-            p.brand.toLowerCase().includes(term)
-        );
-    }
-
-    if (activeCategory !== "all") {
-        result = result.filter(p => p.category === activeCategory);
-    }
-
-    const min = Number($("#minPrice")?.value || 0);
-    const max = Number($("#maxPrice")?.value || 0);
-
-    if (min > 0) {
-        result = result.filter(p => discountedPrice(p) >= min);
-    }
-
-    if (max > 0) {
-        result = result.filter(p => discountedPrice(p) <= max);
-    }
-
-    const ratingFilters = $$(".rating-filter:checked");
-
-    if (ratingFilters.length) {
-        const minimum = Math.max(
-            ...ratingFilters.map(input => Number(input.value))
-        );
-
-        result = result.filter(p => p.rating >= minimum);
-    }
-
-    if ($("#discountFilter")?.checked) {
-        result = result.filter(p => p.discount > 0);
-    }
-
-    if ($("#stockFilter")?.checked) {
-        result = result.filter(p => p.stock > 0);
-    }
-
-    switch (currentSort) {
-
-        case "cheap":
-            result.sort((a, b) =>
-                discountedPrice(a) - discountedPrice(b)
-            );
-            break;
-
-        case "expensive":
-            result.sort((a, b) =>
-                discountedPrice(b) - discountedPrice(a)
-            );
-            break;
-
-        case "rating":
-            result.sort((a, b) => b.rating - a.rating);
-            break;
-
-        case "discount":
-            result.sort((a, b) => b.discount - a.discount);
-            break;
-
-        case "newest":
-            result.sort((a, b) => b.id - a.id);
-            break;
-
-        default:
-            break;
-    }
-
-    return result;
-}
+                <button
+                    type="button"
+                    class="categories-button"
+                    id="categoriesButton"
+                >
+                    <span>☰</span>
+                    دسته‌بندی کالاها
+                </button>
 
 
-/* =========================================================
-   RENDER MAIN PRODUCTS
-========================================================= */
+                <div class="navigation-links">
 
-function renderProducts() {
+                    <a href="#home" class="active">
+                        خانه
+                    </a>
 
-    const grid = $("#productsGrid");
-    if (!grid) return;
+                    <a href="#flashSale">
+                        ⚡ پیشنهادهای ویژه
+                    </a>
 
-    const filtered = getFilteredProducts();
+                    <a href="#bestSellers">
+                        پرفروش‌ها
+                    </a>
 
-    const totalPages = Math.max(
-        1,
-        Math.ceil(filtered.length / perPage)
-    );
+                    <a href="#newProducts">
+                        جدیدترین‌ها
+                    </a>
 
-    if (currentPage > totalPages) {
-        currentPage = totalPages;
-    }
+                    <a href="#topRated">
+                        محبوب‌ترین‌ها
+                    </a>
 
-    const start = (currentPage - 1) * perPage;
-    const pageProducts = filtered.slice(start, start + perPage);
+                    <a href="#brands">
+                        برندها
+                    </a>
 
-    grid.innerHTML = pageProducts.length
-        ? pageProducts.map(productCard).join("")
-        : `<div class="compare-empty">محصولی پیدا نشد.</div>`;
-
-    $("#productsResultCount").textContent =
-        `${new Intl.NumberFormat("fa-IR").format(filtered.length)} محصول`;
-
-    renderPagination(totalPages);
-}
+                </div>
 
 
-/* =========================================================
-   PAGINATION
-========================================================= */
+                <div class="nav-status">
+                    <span class="status-dot"></span>
+                    ارسال سریع
+                </div>
 
-function renderPagination(totalPages) {
-
-    const box = $("#pagination");
-    if (!box) return;
-
-    let html = "";
-
-    if (totalPages <= 1) {
-        box.innerHTML = "";
-        return;
-    }
-
-    const start = Math.max(1, currentPage - 2);
-    const end = Math.min(totalPages, start + 4);
-
-    if (currentPage > 1) {
-        html += `
-            <button data-page="${currentPage - 1}">
-                ‹
-            </button>
-        `;
-    }
-
-    for (let i = start; i <= end; i++) {
-        html += `
-            <button
-                class="${i === currentPage ? "active" : ""}"
-                data-page="${i}"
-            >
-                ${i}
-            </button>
-        `;
-    }
-
-    if (currentPage < totalPages) {
-        html += `
-            <button data-page="${currentPage + 1}">
-                ›
-            </button>
-        `;
-    }
-
-    box.innerHTML = html;
-}
+            </div>
+        </nav>
 
 
-/* =========================================================
-   CATEGORIES
-========================================================= */
-
-function renderCategories() {
-
-    const grid = $("#categoriesGrid");
-    if (!grid) return;
-
-    grid.innerHTML = categories.map(([name, icon]) => `
-        <button
-            class="category-card"
-            data-category-card="${escapeHTML(name)}"
+        <!-- Mega Menu -->
+        <div
+            id="megaMenu"
+            class="mega-menu"
         >
-            <span class="category-icon">${icon}</span>
-            <strong>${escapeHTML(name)}</strong>
-        </button>
-    `).join("");
 
-    const filters = $("#categoryFilters");
+            <div class="container mega-menu-grid">
 
-    if (filters) {
-        filters.innerHTML = `
-            <button
-                class="${activeCategory === "all" ? "active" : ""}"
-                data-filter-category="all"
-            >
-                همه محصولات
-            </button>
-        ` + categories.map(([name]) => `
-            <button
-                class="${activeCategory === name ? "active" : ""}"
-                data-filter-category="${escapeHTML(name)}"
-            >
-                ${escapeHTML(name)}
-            </button>
-        `).join("");
-    }
-}
+                <div class="mega-column">
+                    <h3>📱 موبایل و دیجیتال</h3>
 
+                    <button data-category="موبایل">
+                        گوشی موبایل
+                    </button>
 
-/* =========================================================
-   SPECIAL PRODUCT SECTIONS
-========================================================= */
+                    <button data-category="تبلت">
+                        تبلت
+                    </button>
 
-function renderSectionProducts() {
+                    <button data-category="لپ‌تاپ">
+                        لپ‌تاپ
+                    </button>
 
-    const discountProducts = [...products]
-        .filter(p => p.discount > 0)
-        .sort((a, b) => b.discount - a.discount)
-        .slice(0, 8);
+                    <button data-category="هدفون">
+                        هدفون و هندزفری
+                    </button>
 
-    $("#flashProducts").innerHTML =
-        discountProducts.map(productCard).join("");
+                    <button data-category="ساعت">
+                        ساعت هوشمند
+                    </button>
+                </div>
 
 
-    const best = [...products]
-        .sort((a, b) => b.sold - a.sold)
-        .slice(0, 8);
+                <div class="mega-column">
+                    <h3>🎮 سرگرمی</h3>
 
-    $("#bestSellerProducts").innerHTML =
-        best.map(productCard).join("");
+                    <button data-category="گیمینگ">
+                        تجهیزات گیمینگ
+                    </button>
 
+                    <button data-category="کنسول">
+                        کنسول بازی
+                    </button>
 
-    const rated = [...products]
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 8);
+                    <button data-category="لوازم جانبی">
+                        لوازم جانبی
+                    </button>
 
-    $("#topRatedProducts").innerHTML =
-        rated.map(productCard).join("");
-
-
-    const newest = [...products]
-        .filter(p => p.isNew)
-        .slice(0, 8);
-
-    $("#newProductsGrid").innerHTML =
-        newest.map(productCard).join("");
+                    <button data-category="اسپیکر">
+                        اسپیکر
+                    </button>
+                </div>
 
 
-    renderRecentlyViewed();
-}
+                <div class="mega-column">
+                    <h3>👕 مد و پوشاک</h3>
+
+                    <button data-category="مردانه">
+                        پوشاک مردانه
+                    </button>
+
+                    <button data-category="زنانه">
+                        پوشاک زنانه
+                    </button>
+
+                    <button data-category="کفش">
+                        کفش
+                    </button>
+
+                    <button data-category="اکسسوری">
+                        اکسسوری
+                    </button>
+                </div>
 
 
-/* =========================================================
-   RECENT
-========================================================= */
+                <div class="mega-column">
+                    <h3>🏠 خانه و زندگی</h3>
 
-function addRecent(id) {
+                    <button data-category="خانه">
+                        لوازم خانه
+                    </button>
 
-    id = Number(id);
+                    <button data-category="آشپزخانه">
+                        آشپزخانه
+                    </button>
 
-    recent = recent.filter(x => x !== id);
-    recent.unshift(id);
+                    <button data-category="دکور">
+                        دکوراسیون
+                    </button>
 
-    recent = recent.slice(0, 8);
+                    <button data-category="ابزار">
+                        ابزار
+                    </button>
+                </div>
 
-    save(STORAGE.recent, recent);
-}
-
-function renderRecentlyViewed() {
-
-    const grid = $("#recentlyViewedGrid");
-    if (!grid) return;
-
-    const list = recent
-        .map(id => findProduct(id))
-        .filter(Boolean);
-
-    if (!list.length) {
-        grid.innerHTML = `
-            <div class="compare-empty">
-                هنوز محصولی مشاهده نکرده‌اید.
             </div>
-        `;
-        return;
-    }
 
-    grid.innerHTML = list.map(productCard).join("");
-}
+        </div>
+
+    </header>
 
 
-/* =========================================================
-   FAVORITES
-========================================================= */
-
-function toggleFavorite(id) {
-
-    id = Number(id);
-
-    if (favorites.includes(id)) {
-        favorites = favorites.filter(x => x !== id);
-        showToast("از علاقه‌مندی‌ها حذف شد");
-    } else {
-        favorites.push(id);
-        showToast("به علاقه‌مندی‌ها اضافه شد", "success");
-    }
-
-    save(STORAGE.favorites, favorites);
-    updateCounts();
-    refreshVisibleCards();
-}
-
-function showFavorites() {
-
-    const list = favorites
-        .map(id => findProduct(id))
-        .filter(Boolean);
-
-    $("#productsGrid").innerHTML =
-        list.length
-        ? list.map(productCard).join("")
-        : `<div class="compare-empty">هنوز محصولی در علاقه‌مندی‌ها نیست.</div>`;
-
-    $("#productsTitle").textContent = "علاقه‌مندی‌های من";
-    $("#productsKicker").textContent = "ذخیره‌شده‌ها";
-    $("#productsResultCount").textContent =
-        `${list.length} محصول`;
-}
+    <!-- =========================
+         MAIN
+    ========================== -->
+    <main id="home">
 
 
-/* =========================================================
-   COMPARE
-========================================================= */
+        <!-- =========================
+             HERO
+        ========================== -->
+        <section class="hero-section">
 
-function toggleCompare(id) {
+            <div class="container">
 
-    id = Number(id);
+                <div class="hero-slider" id="heroSlider">
 
-    if (compareList.includes(id)) {
-        compareList = compareList.filter(x => x !== id);
-        showToast("از مقایسه حذف شد");
-    } else {
+                    <article class="hero-slide active">
 
-        if (compareList.length >= 4) {
-            showToast("حداکثر ۴ محصول قابل مقایسه است", "error");
-            return;
-        }
+                        <div class="hero-content">
 
-        compareList.push(id);
-        showToast("به مقایسه اضافه شد", "success");
-    }
+                            <span class="hero-label">
+                                پیشنهاد ویژه Nova
+                            </span>
 
-    save(STORAGE.compare, compareList);
-    updateCounts();
-    refreshVisibleCards();
-}
+                            <h1>
+                                دنیای خرید
+                                <span>مدرن</span>
+                                اینجاست
+                            </h1>
 
-function renderCompare() {
+                            <p>
+                                هزاران محصول، قیمت مناسب و تجربه‌ای متفاوت
+                                از خرید اینترنتی.
+                            </p>
 
-    const box = $("#compareContent");
+                            <div class="hero-buttons">
 
-    const list = compareList
-        .map(id => findProduct(id))
-        .filter(Boolean);
+                                <button
+                                    type="button"
+                                    class="primary-button"
+                                    id="heroShopButton"
+                                >
+                                    مشاهده محصولات
+                                </button>
 
-    if (!list.length) {
-        box.innerHTML = `
-            <div class="compare-empty">
-                محصولی برای مقایسه انتخاب نشده است.
+                                <button
+                                    type="button"
+                                    class="secondary-button"
+                                    data-scroll="#flashSale"
+                                >
+                                    پیشنهادهای ویژه
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="hero-visual">
+
+                            <div class="hero-glow"></div>
+
+                            <div class="hero-product">
+                                <span>📱</span>
+                            </div>
+
+                            <div class="floating-card card-one">
+                                <strong>50%</strong>
+                                <small>تخفیف</small>
+                            </div>
+
+                            <div class="floating-card card-two">
+                                <strong>★ 4.9</strong>
+                                <small>امتیاز کاربران</small>
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="hero-slide">
+
+                        <div class="hero-content">
+
+                            <span class="hero-label">
+                                تخفیف محدود
+                            </span>
+
+                            <h1>
+                                فرصت خرید
+                                <span>امروز</span>
+                            </h1>
+
+                            <p>
+                                محصولات منتخب با تخفیف‌های ویژه و زمان محدود.
+                            </p>
+
+                            <button
+                                type="button"
+                                class="primary-button"
+                                data-scroll="#flashSale"
+                            >
+                                خرید با تخفیف
+                            </button>
+
+                        </div>
+
+                        <div class="hero-visual">
+                            <div class="hero-product">
+                                <span>💻</span>
+                            </div>
+                        </div>
+
+                    </article>
+
+
+                    <article class="hero-slide">
+
+                        <div class="hero-content">
+
+                            <span class="hero-label">
+                                Nova Collection
+                            </span>
+
+                            <h1>
+                                جدیدترین
+                                <span>محصولات</span>
+                            </h1>
+
+                            <p>
+                                تازه‌ترین محصولات فروشگاه را زودتر از بقیه ببینید.
+                            </p>
+
+                            <button
+                                type="button"
+                                class="primary-button"
+                                data-scroll="#newProducts"
+                            >
+                                مشاهده جدیدترین‌ها
+                            </button>
+
+                        </div>
+
+                        <div class="hero-visual">
+                            <div class="hero-product">
+                                <span>🎧</span>
+                            </div>
+                        </div>
+
+                    </article>
+
+
+                    <button
+                        type="button"
+                        class="slider-arrow slider-prev"
+                        id="heroPrev"
+                    >
+                        ‹
+                    </button>
+
+                    <button
+                        type="button"
+                        class="slider-arrow slider-next"
+                        id="heroNext"
+                    >
+                        ›
+                    </button>
+
+
+                    <div
+                        class="slider-dots"
+                        id="sliderDots"
+                    ></div>
+
+                </div>
+
             </div>
-        `;
-        return;
-    }
 
-    box.innerHTML = `
-        <table class="compare-table">
-
-            <tr>
-                <th>ویژگی</th>
-                ${list.map(p => `<th>${escapeHTML(p.name)}</th>`).join("")}
-            </tr>
-
-            <tr>
-                <td>دسته</td>
-                ${list.map(p => `<td>${p.category}</td>`).join("")}
-            </tr>
-
-            <tr>
-                <td>برند</td>
-                ${list.map(p => `<td>${p.brand}</td>`).join("")}
-            </tr>
-
-            <tr>
-                <td>امتیاز</td>
-                ${list.map(p => `<td>★ ${p.rating}</td>`).join("")}
-            </tr>
-
-            <tr>
-                <td>تخفیف</td>
-                ${list.map(p => `<td>${p.discount}%</td>`).join("")}
-            </tr>
-
-            <tr>
-                <td>قیمت</td>
-                ${list.map(p => `<td>${toman(discountedPrice(p))}</td>`).join("")}
-            </tr>
-
-        </table>
-    `;
-}
+        </section>
 
 
-/* =========================================================
-   CART
-========================================================= */
+        <!-- =========================
+             QUICK FEATURES
+        ========================== -->
+        <section class="features-section">
 
-function addToCart(id, quantity = 1) {
+            <div class="container features-grid">
 
-    id = Number(id);
-
-    const product = findProduct(id);
-    if (!product) return;
-
-    const existing = cart.find(item => item.id === id);
-
-    if (existing) {
-        existing.quantity += quantity;
-    } else {
-        cart.push({
-            id,
-            quantity
-        });
-    }
-
-    save(STORAGE.cart, cart);
-    updateCounts();
-    renderCart();
-
-    showToast(
-        `${product.name} به سبد خرید اضافه شد`,
-        "success"
-    );
-}
-
-function changeQuantity(id, amount) {
-
-    const item = cart.find(x => x.id === Number(id));
-    if (!item) return;
-
-    item.quantity += amount;
-
-    if (item.quantity <= 0) {
-        cart = cart.filter(x => x.id !== Number(id));
-    }
-
-    save(STORAGE.cart, cart);
-    updateCounts();
-    renderCart();
-}
-
-function cartSubtotal() {
-
-    return cart.reduce((sum, item) => {
-
-        const product = findProduct(item.id);
-
-        if (!product) return sum;
-
-        return sum +
-            discountedPrice(product) * item.quantity;
-
-    }, 0);
-}
-
-function calculateDiscount(subtotal) {
-
-    if (!appliedCoupon) return 0;
-
-    if (appliedCoupon === "NOVA10") {
-        return subtotal * .10;
-    }
-
-    if (appliedCoupon === "NOVA5") {
-        return subtotal * .05;
-    }
-
-    return 0;
-}
-
-function selectedShipping() {
-
-    const selected =
-        $('input[name="shipping"]:checked');
-
-    return Number(selected?.value || 0);
-}
-
-function calculateCartTotal() {
-
-    const subtotal = cartSubtotal();
-    const discount = calculateDiscount(subtotal);
-    const shipping = cart.length ? selectedShipping() : 0;
-
-    return Math.max(
-        0,
-        subtotal - discount + shipping
-    );
-}
-
-function renderCart() {
-
-    const box = $("#cartItems");
-    const empty = $("#cartEmpty");
-
-    if (!cart.length) {
-
-        box.innerHTML = "";
-        empty.classList.add("show");
-
-    } else {
-
-        empty.classList.remove("show");
-
-        box.innerHTML = cart.map(item => {
-
-            const p = findProduct(item.id);
-            if (!p) return "";
-
-            return `
-                <div class="cart-item">
-
-                    <div class="cart-item-image">
-                        ${p.icon}
+                <div class="feature-item">
+                    <span>🚚</span>
+                    <div>
+                        <strong>ارسال سریع</strong>
+                        <small>تحویل مطمئن سفارش</small>
                     </div>
+                </div>
+
+                <div class="feature-item">
+                    <span>🛡️</span>
+                    <div>
+                        <strong>خرید امن</strong>
+                        <small>پرداخت کاملاً نمایشی</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span>↩️</span>
+                    <div>
+                        <strong>پشتیبانی سفارش</strong>
+                        <small>پیگیری آسان خرید</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span>✦</span>
+                    <div>
+                        <strong>محصولات متنوع</strong>
+                        <small>هزاران محصول</small>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             CATEGORIES
+        ========================== -->
+        <section class="section categories-section">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="section-kicker">
+                            دسته‌بندی‌ها
+                        </span>
+
+                        <h2>
+                            چه چیزی می‌خواهی؟
+                        </h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="text-button"
+                        id="allCategoriesButton"
+                    >
+                        مشاهده همه
+                        ←
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="categories-grid"
+                    id="categoriesGrid"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             FLASH SALE
+        ========================== -->
+        <section
+            class="section flash-sale-section"
+            id="flashSale"
+        >
+
+            <div class="container">
+
+                <div class="flash-sale-header">
 
                     <div>
 
-                        <div class="cart-item-name">
-                            ${escapeHTML(p.name)}
-                        </div>
+                        <span class="section-kicker">
+                            محدود و هیجان‌انگیز
+                        </span>
 
-                        <div class="cart-item-price">
-                            ${toman(discountedPrice(p))}
-                        </div>
+                        <h2>
+                            ⚡ تخفیف‌های ویژه
+                        </h2>
 
-                        <div class="quantity-control">
+                        <p>
+                            تخفیف‌های این بخش هر چند ساعت تغییر می‌کنند.
+                        </p>
 
-                            <button
-                                data-cart-action="plus"
-                                data-id="${p.id}"
-                            >
-                                +
-                            </button>
+                    </div>
 
-                            <span>${item.quantity}</span>
 
-                            <button
-                                data-cart-action="minus"
-                                data-id="${p.id}"
-                            >
-                                −
-                            </button>
+                    <div class="countdown-box">
 
+                        <span>پایان این پیشنهادها:</span>
+
+                        <div
+                            id="countdown"
+                            class="countdown"
+                        >
+                            <div>
+                                <strong id="countdownHours">00</strong>
+                                <small>ساعت</small>
+                            </div>
+
+                            <b>:</b>
+
+                            <div>
+                                <strong id="countdownMinutes">00</strong>
+                                <small>دقیقه</small>
+                            </div>
+
+                            <b>:</b>
+
+                            <div>
+                                <strong id="countdownSeconds">00</strong>
+                                <small>ثانیه</small>
+                            </div>
                         </div>
 
                     </div>
 
-                    <button
-                        class="remove-item"
-                        data-cart-action="remove"
-                        data-id="${p.id}"
+                </div>
+
+
+                <div
+                    class="product-grid flash-grid"
+                    id="flashProducts"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             PRODUCTS AREA
+        ========================== -->
+        <section class="section products-section">
+
+            <div class="container">
+
+                <div class="products-layout">
+
+
+                    <!-- Filters -->
+                    <aside
+                        class="filters-panel"
+                        id="filtersPanel"
                     >
-                        ×
+
+                        <div class="filters-header">
+                            <h3>فیلتر محصولات</h3>
+
+                            <button
+                                type="button"
+                                id="closeFilters"
+                                class="mobile-close"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+
+                        <button
+                            type="button"
+                            id="resetFilters"
+                            class="reset-filters"
+                        >
+                            پاک کردن فیلترها
+                        </button>
+
+
+                        <!-- Category -->
+                        <div class="filter-group">
+
+                            <h4>دسته‌بندی</h4>
+
+                            <div
+                                id="categoryFilters"
+                                class="filter-options"
+                            ></div>
+
+                        </div>
+
+
+                        <!-- Price -->
+                        <div class="filter-group">
+
+                            <h4>محدوده قیمت</h4>
+
+                            <div class="price-inputs">
+
+                                <input
+                                    type="number"
+                                    id="minPrice"
+                                    placeholder="حداقل"
+                                    min="0"
+                                >
+
+                                <span>تا</span>
+
+                                <input
+                                    type="number"
+                                    id="maxPrice"
+                                    placeholder="حداکثر"
+                                    min="0"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Rating -->
+                        <div class="filter-group">
+
+                            <h4>امتیاز</h4>
+
+                            <label class="check-row">
+                                <input
+                                    type="checkbox"
+                                    value="4"
+                                    class="rating-filter"
+                                >
+                                <span>★ 4 به بالا</span>
+                            </label>
+
+                            <label class="check-row">
+                                <input
+                                    type="checkbox"
+                                    value="3"
+                                    class="rating-filter"
+                                >
+                                <span>★ 3 به بالا</span>
+                            </label>
+
+                            <label class="check-row">
+                                <input
+                                    type="checkbox"
+                                    value="2"
+                                    class="rating-filter"
+                                >
+                                <span>★ 2 به بالا</span>
+                            </label>
+
+                        </div>
+
+
+                        <!-- Discount -->
+                        <div class="filter-group">
+
+                            <h4>تخفیف</h4>
+
+                            <label class="check-row">
+                                <input
+                                    type="checkbox"
+                                    id="discountFilter"
+                                >
+                                <span>فقط کالاهای تخفیف‌دار</span>
+                            </label>
+
+                        </div>
+
+
+                        <!-- Stock -->
+                        <div class="filter-group">
+
+                            <h4>موجودی</h4>
+
+                            <label class="check-row">
+                                <input
+                                    type="checkbox"
+                                    id="stockFilter"
+                                >
+                                <span>فقط کالاهای موجود</span>
+                            </label>
+
+                        </div>
+
+                    </aside>
+
+
+                    <!-- Products -->
+                    <div class="products-content">
+
+                        <div class="section-heading products-heading">
+
+                            <div>
+                                <span
+                                    class="section-kicker"
+                                    id="productsKicker"
+                                >
+                                    فروشگاه Nova
+                                </span>
+
+                                <h2 id="productsTitle">
+                                    همه محصولات
+                                </h2>
+
+                                <p
+                                    id="productsResultCount"
+                                    class="result-count"
+                                >
+                                    در حال آماده‌سازی...
+                                </p>
+                            </div>
+
+
+                            <div class="products-controls">
+
+                                <button
+                                    type="button"
+                                    class="mobile-filter-button"
+                                    id="openFilters"
+                                >
+                                    ☷ فیلتر
+                                </button>
+
+                                <label class="sort-box">
+
+                                    <span>مرتب‌سازی:</span>
+
+                                    <select id="sortSelect">
+
+                                        <option value="default">
+                                            پیشنهادی
+                                        </option>
+
+                                        <option value="newest">
+                                            جدیدترین
+                                        </option>
+
+                                        <option value="cheap">
+                                            ارزان‌ترین
+                                        </option>
+
+                                        <option value="expensive">
+                                            گران‌ترین
+                                        </option>
+
+                                        <option value="rating">
+                                            محبوب‌ترین
+                                        </option>
+
+                                        <option value="discount">
+                                            بیشترین تخفیف
+                                        </option>
+
+                                    </select>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="productsGrid"
+                            class="product-grid"
+                        ></div>
+
+
+                        <!-- Pagination -->
+                        <div
+                            id="pagination"
+                            class="pagination"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             BEST SELLERS
+        ========================== -->
+        <section
+            class="section"
+            id="bestSellers"
+        >
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="section-kicker">
+                            انتخاب کاربران
+                        </span>
+
+                        <h2>
+                            🔥 پرفروش‌ترین‌ها
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div
+                    id="bestSellerProducts"
+                    class="product-grid"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             TOP RATED
+        ========================== -->
+        <section
+            class="section"
+            id="topRated"
+        >
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="section-kicker">
+                            امتیاز بالا
+                        </span>
+
+                        <h2>
+                            ⭐ محبوب‌ترین محصولات
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div
+                    id="topRatedProducts"
+                    class="product-grid"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             NEW PRODUCTS
+        ========================== -->
+        <section
+            class="section"
+            id="newProducts"
+        >
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="section-kicker">
+                            تازه وارد
+                        </span>
+
+                        <h2>
+                            ✦ جدیدترین محصولات
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div
+                    id="newProductsGrid"
+                    class="product-grid"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             RECENTLY VIEWED
+        ========================== -->
+        <section
+            class="section recently-section"
+            id="recentlySection"
+        >
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="section-kicker">
+                            تاریخچه
+                        </span>
+
+                        <h2>
+                            🕘 اخیراً مشاهده‌شده
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div
+                    id="recentlyViewedGrid"
+                    class="product-grid"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             BRANDS
+        ========================== -->
+        <section
+            class="section brands-section"
+            id="brands"
+        >
+
+            <div class="container">
+
+                <div class="section-heading centered">
+
+                    <div>
+                        <span class="section-kicker">
+                            برندها
+                        </span>
+
+                        <h2>
+                            برندهای محبوب
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                <div class="brands-grid">
+
+                    <button data-brand="Nova">NOVA</button>
+                    <button data-brand="Apple">APPLE</button>
+                    <button data-brand="Samsung">SAMSUNG</button>
+                    <button data-brand="Xiaomi">XIAOMI</button>
+                    <button data-brand="Sony">SONY</button>
+                    <button data-brand="Lenovo">LENOVO</button>
+                    <button data-brand="Asus">ASUS</button>
+                    <button data-brand="LG">LG</button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             REVIEWS
+        ========================== -->
+        <section class="section reviews-section">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+                        <span class="section-kicker">
+                            نظرات نمونه
+                        </span>
+
+                        <h2>
+                            💬 تجربه کاربران
+                        </h2>
+
+                        <p>
+                            این نظرات صرفاً نمونه نمایشی برای طراحی سایت هستند.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="reviewsGrid"
+                    class="reviews-grid"
+                ></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             NEWSLETTER
+        ========================== -->
+        <section class="newsletter-section">
+
+            <div class="container">
+
+                <div class="newsletter-box">
+
+                    <div>
+                        <span class="newsletter-icon">
+                            ✉
+                        </span>
+
+                        <div>
+                            <h2>
+                                از پیشنهادهای Nova باخبر شو
+                            </h2>
+
+                            <p>
+                                تخفیف‌ها و محصولات جدید را از دست نده.
+                            </p>
+                        </div>
+                    </div>
+
+
+                    <form
+                        id="newsletterForm"
+                        class="newsletter-form"
+                    >
+
+                        <input
+                            type="email"
+                            id="newsletterEmail"
+                            placeholder="ایمیل شما"
+                            required
+                        >
+
+                        <button type="submit">
+                            عضویت
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+    <footer class="footer">
+
+        <div class="container">
+
+            <div class="footer-grid">
+
+                <div class="footer-brand">
+
+                    <a href="#" class="logo">
+                        <span class="logo-icon">N</span>
+
+                        <span class="logo-text">
+                            <strong>NOVA</strong>
+                            <small>SHOP</small>
+                        </span>
+                    </a>
+
+                    <p>
+                        Nova Shop یک فروشگاه نمایشی مدرن برای تجربه
+                        خرید اینترنتی است.
+                    </p>
+
+                    <div class="social-links">
+
+                        <button type="button">◎</button>
+                        <button type="button">◉</button>
+                        <button type="button">◌</button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="footer-column">
+
+                    <h3>خدمات مشتریان</h3>
+
+                    <button data-open="helpModal">
+                        راهنمای خرید
+                    </button>
+
+                    <button data-open="helpModal">
+                        روش‌های ارسال
+                    </button>
+
+                    <button data-open="helpModal">
+                        قوانین و مقررات
+                    </button>
+
+                    <button data-open="helpModal">
+                        سوالات متداول
                     </button>
 
                 </div>
-            `;
-
-        }).join("");
-    }
-
-    const subtotal = cartSubtotal();
-    const discount = calculateDiscount(subtotal);
-    const shipping = cart.length ? selectedShipping() : 0;
-    const total = subtotal - discount + shipping;
-
-    $("#cartSubtotal").textContent = toman(subtotal);
-    $("#cartDiscount").textContent = discount
-        ? `− ${toman(discount)}`
-        : "۰ تومان";
-    $("#cartShipping").textContent = toman(shipping);
-    $("#cartTotal").textContent = toman(total);
-}
 
 
-/* =========================================================
-   COUPON
-========================================================= */
+                <div class="footer-column">
 
-function applyCoupon() {
+                    <h3>دسترسی سریع</h3>
 
-    const input = $("#couponInput");
-    const code = input.value.trim().toUpperCase();
+                    <button data-scroll="#flashSale">
+                        پیشنهادهای ویژه
+                    </button>
 
-    if (code === "NOVA10" || code === "NOVA5") {
+                    <button data-scroll="#bestSellers">
+                        پرفروش‌ها
+                    </button>
 
-        appliedCoupon = code;
+                    <button data-scroll="#newProducts">
+                        جدیدترین‌ها
+                    </button>
 
-        showToast(
-            code === "NOVA10"
-                ? "کد ۱۰٪ با موفقیت اعمال شد"
-                : "کد ۵٪ با موفقیت اعمال شد",
-            "success"
-        );
+                    <button data-scroll="#brands">
+                        برندها
+                    </button>
 
-        renderCart();
-
-    } else {
-
-        appliedCoupon = null;
-        showToast(
-            "کد تخفیف معتبر نیست",
-            "error"
-        );
-    }
-}
+                </div>
 
 
-/* =========================================================
-   QUICK VIEW
-========================================================= */
+                <div class="footer-column">
 
-function openQuickView(id) {
+                    <h3>حساب کاربری</h3>
 
-    const p = findProduct(id);
-    if (!p) return;
+                    <button id="footerAccount">
+                        حساب کاربری
+                    </button>
 
-    addRecent(p.id);
+                    <button id="footerPurchases">
+                        خریدهای من
+                    </button>
 
-    $("#quickViewContent").innerHTML = `
+                    <button id="footerFavorites">
+                        علاقه‌مندی‌ها
+                    </button>
 
-        <div class="quick-product">
+                    <button id="footerCart">
+                        سبد خرید
+                    </button>
 
-            <div class="quick-product-image">
-                ${p.icon}
+                </div>
+
             </div>
 
-            <div class="quick-product-info">
 
-                <span class="section-kicker">
-                    ${escapeHTML(p.category)}
+            <div class="footer-bottom">
+
+                <span>
+                    © 2026 Nova Shop
                 </span>
 
+                <span>
+                    طراحی شده برای نسخه نمایشی
+                </span>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =====================================================
+         MODALS
+    ====================================================== -->
+
+
+    <!-- =========================
+         ACCOUNT MODAL
+    ========================== -->
+    <div
+        id="accountModal"
+        class="modal"
+        aria-hidden="true"
+    >
+
+        <div class="modal-overlay"></div>
+
+        <div class="modal-box account-modal-box">
+
+            <button
+                type="button"
+                class="modal-close"
+                data-close="accountModal"
+            >
+                ×
+            </button>
+
+
+            <div class="account-header">
+
+                <div class="account-avatar">
+                    ♙
+                </div>
+
                 <h2>
-                    ${escapeHTML(p.name)}
+                    حساب کاربری
                 </h2>
 
-                <div class="rating">
-                    ★ ${p.rating}
-                </div>
-
                 <p>
-                    این محصول یک نمونه نمایشی در فروشگاه
-                    Nova Shop است.
+                    برای ورود اطلاعات خود را وارد کنید.
                 </p>
 
-                <div class="quick-specs">
-                    برند: ${p.brand}<br>
-                    موجودی: ${p.stock} عدد<br>
-                    فروش: ${p.sold} عدد
-                </div>
+            </div>
 
-                <div class="price-area">
-                    ${
-                        p.discount
-                        ? `<span class="old-price">${toman(p.price)}</span>`
-                        : ""
-                    }
 
-                    <span class="new-price">
-                        ${toman(discountedPrice(p))}
-                    </span>
-                </div>
+            <form id="accountForm">
+
+                <label>
+                    ایمیل
+                    <input
+                        type="email"
+                        id="accountEmail"
+                        placeholder="example@email.com"
+                        required
+                    >
+                </label>
+
+                <label>
+                    رمز عبور
+                    <input
+                        type="password"
+                        id="accountPassword"
+                        placeholder="رمز عبور"
+                        required
+                    >
+                </label>
 
                 <button
+                    type="submit"
                     class="primary-button full-button"
-                    data-action="cart"
-                    data-id="${p.id}"
                 >
-                    افزودن به سبد خرید
+                    ورود به حساب
+                </button>
+
+            </form>
+
+
+            <div class="demo-note">
+                این بخش در نسخه فعلی نمایشی است و اطلاعات واقعی
+                به سرور ارسال نمی‌شود.
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         DASHBOARD MODAL
+    ========================== -->
+    <div
+        id="dashboardModal"
+        class="modal"
+        aria-hidden="true"
+    >
+
+        <div class="modal-overlay"></div>
+
+        <div class="modal-box dashboard-modal-box">
+
+            <button
+                type="button"
+                class="modal-close"
+                data-close="dashboardModal"
+            >
+                ×
+            </button>
+
+
+            <div class="dashboard-header">
+
+                <div>
+                    <span class="section-kicker">
+                        حساب من
+                    </span>
+
+                    <h2>
+                        داشبورد Nova
+                    </h2>
+                </div>
+
+                <div
+                    id="dashboardUser"
+                    class="dashboard-user"
+                >
+                    مهمان
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-grid">
+
+                <button
+                    type="button"
+                    data-dashboard="purchases"
+                >
+                    <span>📦</span>
+                    <strong>خریدهای من</strong>
+                    <small>سفارش‌های ثبت‌شده</small>
+                </button>
+
+                <button
+                    type="button"
+                    data-dashboard="orders"
+                >
+                    <span>🚚</span>
+                    <strong>پیگیری سفارش</strong>
+                    <small>وضعیت سفارش‌ها</small>
+                </button>
+
+                <button
+                    type="button"
+                    data-dashboard="favorites"
+                >
+                    <span>♡</span>
+                    <strong>علاقه‌مندی‌ها</strong>
+                    <small>محصولات ذخیره‌شده</small>
+                </button>
+
+                <button
+                    type="button"
+                    data-dashboard="recent"
+                >
+                    <span>🕘</span>
+                    <strong>اخیراً دیده‌شده</strong>
+                    <small>محصولات اخیر</small>
+                </button>
+
+                <button
+                    type="button"
+                    data-dashboard="compare"
+                >
+                    <span>⇄</span>
+                    <strong>مقایسه محصولات</strong>
+                    <small>محصولات مقایسه‌شده</small>
+                </button>
+
+                <button
+                    type="button"
+                    data-dashboard="coupons"
+                >
+                    <span>🎟️</span>
+                    <strong>کدهای تخفیف</strong>
+                    <small>تخفیف‌های من</small>
+                </button>
+
+                <button
+                    type="button"
+                    data-dashboard="notifications"
+                >
+                    <span>🔔</span>
+                    <strong>اعلان‌ها</strong>
+                    <small>پیام‌های فروشگاه</small>
+                </button>
+
+                <button
+                    type="button"
+                    data-dashboard="profile"
+                >
+                    <span>⚙️</span>
+                    <strong>اطلاعات حساب</strong>
+                    <small>تنظیمات حساب</small>
                 </button>
 
             </div>
 
         </div>
-    `;
 
-    openModal("quickViewModal");
-    renderRecentlyViewed();
-}
+    </div>
 
 
-/* =========================================================
-   QUICK BUY
-========================================================= */
+    <!-- =========================
+         CART DRAWER
+    ========================== -->
+    <div
+        id="cartDrawer"
+        class="drawer"
+        aria-hidden="true"
+    >
 
-function quickBuy(id) {
+        <div class="drawer-overlay"></div>
 
-    cart = [{
-        id: Number(id),
-        quantity: 1
-    }];
+        <aside class="drawer-panel">
 
-    save(STORAGE.cart, cart);
+            <div class="drawer-header">
 
-    appliedCoupon = null;
+                <div>
+                    <span class="section-kicker">
+                        سبد خرید
+                    </span>
 
-    renderCart();
-    openDrawer("cartDrawer");
-}
-
-
-/* =========================================================
-   PAYMENT
-========================================================= */
-
-function openPayment() {
-
-    if (!cart.length) {
-        showToast("سبد خرید شما خالی است", "error");
-        return;
-    }
-
-    currentPaymentTotal = calculateCartTotal();
-
-    $("#paymentAmount").textContent =
-        toman(currentPaymentTotal);
-
-    createCaptcha();
-
-    $("#paymentError").textContent = "";
-
-    closeDrawer("cartDrawer");
-    openModal("paymentModal");
-}
-
-function createCaptcha() {
-
-    captcha =
-        String(Math.floor(10000 + Math.random() * 90000));
-
-    $("#captchaCode").textContent = captcha;
-    $("#captchaInput").value = "";
-}
-
-function validatePayment() {
-
-    const card =
-        $("#cardNumber").value.replace(/\s/g, "");
-
-    const expiry =
-        $("#cardExpiry").value.trim();
-
-    const cvv =
-        $("#cardCvv").value.trim();
-
-    const entered =
-        $("#captchaInput").value.trim();
-
-    if (!/^\d{16}$/.test(card)) {
-        return "شماره کارت باید ۱۶ رقم باشد.";
-    }
-
-    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-        return "تاریخ انقضا را به شکل MM/YY وارد کنید.";
-    }
-
-    if (!/^\d{3,4}$/.test(cvv)) {
-        return "CVV2 صحیح نیست.";
-    }
-
-    if (entered !== captcha) {
-        return "کد تأیید اشتباه است.";
-    }
-
-    return "";
-}
-
-function completePayment() {
-
-    const error = validatePayment();
-
-    if (error) {
-        $("#paymentError").textContent = error;
-        return;
-    }
-
-    const orderNumber =
-        "NOVA-" +
-        String(Date.now()).slice(-8);
-
-    const order = {
-        orderNumber,
-        date: new Date().toLocaleString("fa-IR"),
-        status: "ثبت موفق",
-        total: currentPaymentTotal,
-        items: cart.map(item => {
-
-            const p = findProduct(item.id);
-
-            return {
-                id: p.id,
-                name: p.name,
-                icon: p.icon,
-                price: discountedPrice(p),
-                quantity: item.quantity
-            };
-
-        })
-    };
-
-    purchases.unshift(order);
-
-    save(STORAGE.purchases, purchases);
-
-    cart = [];
-
-    save(STORAGE.cart, cart);
-
-    appliedCoupon = null;
-
-    $("#cardNumber").value = "";
-    $("#cardExpiry").value = "";
-    $("#cardCvv").value = "";
-    $("#captchaInput").value = "";
-
-    $("#successOrderNumber").textContent =
-        orderNumber;
-
-    $("#successOrderTotal").textContent =
-        toman(order.total);
-
-    closeModal("paymentModal");
-    renderCart();
-    updateCounts();
-
-    openModal("successModal");
-}
-
-
-/* =========================================================
-   PURCHASES
-========================================================= */
-
-function renderPurchases() {
-
-    const box = $("#purchasesList");
-
-    if (!purchases.length) {
-
-        box.innerHTML = `
-            <div class="compare-empty">
-                هنوز سفارشی ثبت نشده است.
-            </div>
-        `;
-
-        return;
-    }
-
-    box.innerHTML = purchases.map(order => `
-
-        <div class="purchase-card">
-
-            <div class="purchase-top">
-
-                <span class="purchase-number">
-                    ${order.orderNumber}
-                </span>
-
-                <span class="purchase-status">
-                    ${order.status}
-                </span>
-
-            </div>
-
-            ${order.items.map(item => `
-
-                <div class="purchase-product">
-
-                    <div class="purchase-product-icon">
-                        ${item.icon}
-                    </div>
-
-                    <div>
-                        <strong>
-                            ${escapeHTML(item.name)}
-                        </strong>
-
-                        <small>
-                            × ${item.quantity}
-                        </small>
-                    </div>
-
+                    <h2>
+                        خرید شما
+                    </h2>
                 </div>
 
-            `).join("")}
-
-            <div class="purchase-total">
-                ${toman(order.total)}
-            </div>
-
-        </div>
-
-    `).join("");
-}
-
-
-/* =========================================================
-   NOTIFICATIONS
-========================================================= */
-
-function renderNotifications() {
-
-    const box = $("#notificationsList");
-
-    const defaults = [
-        {
-            icon: "⚡",
-            title: "پیشنهاد ویژه",
-            text: "تخفیف‌های ویژه Nova هر چند ساعت تغییر می‌کنند."
-        },
-        {
-            icon: "🛒",
-            title: "سبد خرید",
-            text: "محصولات مورد علاقه‌ات را به سبد اضافه کن."
-        },
-        {
-            icon: "🎟️",
-            title: "کد تخفیف",
-            text: "کد NOVA10 برای نسخه نمایشی فعال است."
-        }
-    ];
-
-    box.innerHTML = defaults.map(n => `
-
-        <div class="notification-item">
-
-            <div class="notification-icon">
-                ${n.icon}
-            </div>
-
-            <div>
-                <h4>${n.title}</h4>
-                <p>${n.text}</p>
-            </div>
-
-        </div>
-
-    `).join("");
-}
-
-
-/* =========================================================
-   MODALS
-========================================================= */
-
-function openModal(id) {
-
-    const modal = document.getElementById(id);
-    if (!modal) return;
-
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
-
-    document.body.style.overflow = "hidden";
-}
-
-function closeModal(id) {
-
-    const modal = document.getElementById(id);
-    if (!modal) return;
-
-    modal.classList.remove("open");
-    modal.setAttribute("aria-hidden", "true");
-
-    if (!document.querySelector(".modal.open") &&
-        !document.querySelector(".drawer.open")) {
-
-        document.body.style.overflow = "";
-    }
-}
-
-function openDrawer(id) {
-
-    const drawer = document.getElementById(id);
-    if (!drawer) return;
-
-    drawer.classList.add("open");
-    drawer.setAttribute("aria-hidden", "false");
-
-    document.body.style.overflow = "hidden";
-}
-
-function closeDrawer(id) {
-
-    const drawer = document.getElementById(id);
-    if (!drawer) return;
-
-    drawer.classList.remove("open");
-    drawer.setAttribute("aria-hidden", "true");
-
-    if (!document.querySelector(".modal.open")) {
-        document.body.style.overflow = "";
-    }
-}
-
-
-/* =========================================================
-   COUNTS
-========================================================= */
-
-function updateCounts() {
-
-    $("#cartCount").textContent =
-        cart.reduce((sum, item) => sum + item.quantity, 0);
-
-    $("#mobileCartCount").textContent =
-        cart.reduce((sum, item) => sum + item.quantity, 0);
-
-    $("#favoritesCount").textContent =
-        favorites.length;
-
-    $("#compareCount").textContent =
-        compareList.length;
-}
-
-
-/* =========================================================
-   REFRESH
-========================================================= */
-
-function refreshVisibleCards() {
-
-    renderProducts();
-    renderSectionProducts();
-}
-
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-function showToast(message, type = "") {
-
-    const container = $("#toastContainer");
-
-    const toast = document.createElement("div");
-
-    toast.className = `toast ${type}`;
-
-    toast.textContent = message;
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = "0";
-        toast.style.transform = "translateY(10px)";
-
-        setTimeout(() => toast.remove(), 250);
-    }, 2500);
-}
-
-
-/* =========================================================
-   HERO
-========================================================= */
-
-function setupHero() {
-
-    const slides = $$(".hero-slide");
-    const dots = $("#sliderDots");
-
-    dots.innerHTML = slides.map((_, i) => `
-        <button
-            class="${i === 0 ? "active" : ""}"
-            data-slide="${i}"
-        ></button>
-    `).join("");
-
-    function showSlide(index) {
-
-        currentHero =
-            (index + slides.length) % slides.length;
-
-        slides.forEach((slide, i) => {
-            slide.classList.toggle(
-                "active",
-                i === currentHero
-            );
-        });
-
-        $$("#sliderDots button").forEach((dot, i) => {
-            dot.classList.toggle(
-                "active",
-                i === currentHero
-            );
-        });
-    }
-
-    $("#heroNext").addEventListener(
-        "click",
-        () => showSlide(currentHero + 1)
-    );
-
-    $("#heroPrev").addEventListener(
-        "click",
-        () => showSlide(currentHero - 1)
-    );
-
-    dots.addEventListener("click", e => {
-
-        const button = e.target.closest("[data-slide]");
-
-        if (!button) return;
-
-        showSlide(Number(button.dataset.slide));
-    });
-
-    heroTimer = setInterval(() => {
-        showSlide(currentHero + 1);
-    }, 6000);
-}
-
-
-/* =========================================================
-   COUNTDOWN
-========================================================= */
-
-function setupCountdown() {
-
-    function tick() {
-
-        const interval =
-            4 * 60 * 60 * 1000;
-
-        const now = Date.now();
-
-        const next =
-            Math.ceil(now / interval) * interval;
-
-        let remaining = next - now;
-
-        const hours =
-            Math.floor(remaining / 3600000);
-
-        remaining %= 3600000;
-
-        const minutes =
-            Math.floor(remaining / 60000);
-
-        const seconds =
-            Math.floor((remaining % 60000) / 1000);
-
-        $("#countdownHours").textContent =
-            String(hours).padStart(2, "0");
-
-        $("#countdownMinutes").textContent =
-            String(minutes).padStart(2, "0");
-
-        $("#countdownSeconds").textContent =
-            String(seconds).padStart(2, "0");
-
-        if (remaining <= 1000) {
-            products = generateProducts();
-            renderSectionProducts();
-        }
-    }
-
-    tick();
-
-    setInterval(tick, 1000);
-}
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-function setupSearch() {
-
-    const input = $("#searchInput");
-    const suggestions = $("#searchSuggestions");
-    const clear = $("#clearSearch");
-
-    input.addEventListener("input", () => {
-
-        searchTerm = input.value.trim();
-
-        clear.style.display =
-            searchTerm ? "block" : "none";
-
-        if (!searchTerm) {
-            suggestions.classList.remove("show");
-            currentPage = 1;
-            renderProducts();
-            return;
-        }
-
-        const matches = products
-            .filter(p =>
-                p.name.toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-            )
-            .slice(0, 6);
-
-        suggestions.innerHTML =
-            matches.map(p => `
-                <div
-                    class="suggestion"
-                    data-suggestion="${p.id}"
+                <button
+                    type="button"
+                    class="drawer-close"
+                    data-close="cartDrawer"
                 >
-                    <div class="suggestion-icon">
-                        ${p.icon}
+                    ×
+                </button>
+
+            </div>
+
+
+            <div
+                id="cartItems"
+                class="cart-items"
+            ></div>
+
+
+            <div class="cart-empty" id="cartEmpty">
+
+                <span>🛒</span>
+
+                <h3>
+                    سبد خرید خالی است
+                </h3>
+
+                <p>
+                    محصول موردنظرت را به سبد اضافه کن.
+                </p>
+
+            </div>
+
+
+            <div class="cart-footer">
+
+                <div class="coupon-box">
+
+                    <input
+                        type="text"
+                        id="couponInput"
+                        placeholder="کد تخفیف"
+                    >
+
+                    <button
+                        type="button"
+                        id="applyCoupon"
+                    >
+                        اعمال
+                    </button>
+
+                </div>
+
+
+                <div class="shipping-box">
+
+                    <h4>
+                        روش ارسال
+                    </h4>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="shipping"
+                            value="0"
+                            checked
+                        >
+                        ارسال عادی — رایگان
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="shipping"
+                            value="250000"
+                        >
+                        ارسال سریع — ۲۵۰٬۰۰۰ تومان
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="shipping"
+                            value="450000"
+                        >
+                        ارسال ویژه — ۴۵۰٬۰۰۰ تومان
+                    </label>
+
+                </div>
+
+
+                <div class="cart-summary">
+
+                    <div>
+                        <span>جمع کالاها</span>
+                        <strong id="cartSubtotal">
+                            ۰ تومان
+                        </strong>
                     </div>
 
                     <div>
-                        <strong>
-                            ${escapeHTML(p.name)}
+                        <span>تخفیف</span>
+                        <strong
+                            id="cartDiscount"
+                            class="discount-text"
+                        >
+                            ۰ تومان
                         </strong>
-
-                        <small>
-                            ${p.category}
-                        </small>
                     </div>
+
+                    <div>
+                        <span>هزینه ارسال</span>
+                        <strong id="cartShipping">
+                            ۰ تومان
+                        </strong>
+                    </div>
+
+                    <div class="summary-total">
+                        <span>مبلغ نهایی</span>
+                        <strong id="cartTotal">
+                            ۰ تومان
+                        </strong>
+                    </div>
+
                 </div>
-            `).join("");
 
-        suggestions.classList.toggle(
-            "show",
-            matches.length > 0
-        );
-    });
 
-    clear.addEventListener("click", () => {
-        input.value = "";
-        searchTerm = "";
-        clear.style.display = "none";
-        suggestions.classList.remove("show");
-        currentPage = 1;
-        renderProducts();
-    });
+                <button
+                    type="button"
+                    id="checkoutButton"
+                    class="primary-button full-button"
+                >
+                    ادامه و پرداخت
+                </button>
 
-    $("#searchForm").addEventListener("submit", e => {
-        e.preventDefault();
+            </div>
 
-        searchTerm = input.value.trim();
+        </aside>
 
-        currentPage = 1;
+    </div>
 
-        renderProducts();
 
-        suggestions.classList.remove("show");
+    <!-- =========================
+         QUICK VIEW MODAL
+    ========================== -->
+    <div
+        id="quickViewModal"
+        class="modal"
+        aria-hidden="true"
+    >
 
-        $("#productsTitle").textContent =
-            searchTerm
-            ? `نتایج جستجو برای «${searchTerm}»`
-            : "همه محصولات";
+        <div class="modal-overlay"></div>
 
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({ behavior: "smooth" });
-    });
-}
+        <div class="modal-box quick-view-box">
 
+            <button
+                type="button"
+                class="modal-close"
+                data-close="quickViewModal"
+            >
+                ×
+            </button>
 
-/* =========================================================
-   EVENTS
-========================================================= */
+            <div id="quickViewContent"></div>
 
-document.addEventListener("click", e => {
+        </div>
 
-    /* Product actions */
+    </div>
 
-    const action = e.target.closest("[data-action]");
 
-    if (action) {
+    <!-- =========================
+         COMPARE MODAL
+    ========================== -->
+    <div
+        id="compareModal"
+        class="modal"
+        aria-hidden="true"
+    >
 
-        const id = Number(action.dataset.id);
+        <div class="modal-overlay"></div>
 
-        switch (action.dataset.action) {
+        <div class="modal-box compare-modal-box">
 
-            case "favorite":
-                toggleFavorite(id);
-                break;
+            <button
+                type="button"
+                class="modal-close"
+                data-close="compareModal"
+            >
+                ×
+            </button>
 
-            case "compare":
-                toggleCompare(id);
-                break;
+            <div class="modal-title">
+                <span class="section-kicker">
+                    مقایسه
+                </span>
 
-            case "quick":
-                openQuickView(id);
-                break;
+                <h2>
+                    مقایسه محصولات
+                </h2>
+            </div>
 
-            case "cart":
-                addToCart(id);
-                break;
+            <div
+                id="compareContent"
+                class="compare-content"
+            ></div>
 
-            case "buy":
-                quickBuy(id);
-                break;
-        }
+        </div>
 
-        return;
-    }
+    </div>
 
 
-    /* Cart actions */
+    <!-- =========================
+         PAYMENT MODAL
+    ========================== -->
+    <div
+        id="paymentModal"
+        class="modal"
+        aria-hidden="true"
+    >
 
-    const cartAction =
-        e.target.closest("[data-cart-action]");
+        <div class="modal-overlay"></div>
 
-    if (cartAction) {
+        <div class="modal-box payment-modal-box">
 
-        const id =
-            Number(cartAction.dataset.id);
+            <button
+                type="button"
+                class="modal-close"
+                data-close="paymentModal"
+            >
+                ×
+            </button>
 
-        const type =
-            cartAction.dataset.cartAction;
 
-        if (type === "plus") {
-            changeQuantity(id, 1);
-        }
+            <div class="payment-header">
+
+                <span class="payment-icon">
+                    ◈
+                </span>
+
+                <div>
+                    <span class="section-kicker">
+                        پرداخت نمایشی
+                    </span>
 
-        if (type === "minus") {
-            changeQuantity(id, -1);
-        }
+                    <h2>
+                        تکمیل خرید
+                    </h2>
+                </div>
+
+            </div>
+
+
+            <div class="payment-summary">
+
+                <span>
+                    مبلغ قابل پرداخت
+                </span>
+
+                <strong id="paymentAmount">
+                    ۰ تومان
+                </strong>
 
-        if (type === "remove") {
-            cart = cart.filter(x => x.id !== id);
-            save(STORAGE.cart, cart);
-            updateCounts();
-            renderCart();
-        }
+            </div>
+
+
+            <form id="paymentForm">
 
-        return;
-    }
+                <div class="form-grid">
 
+                    <label class="full-field">
+                        شماره کارت
+                        <input
+                            type="text"
+                            id="cardNumber"
+                            inputmode="numeric"
+                            maxlength="19"
+                            placeholder="0000 0000 0000 0000"
+                            autocomplete="off"
+                            required
+                        >
+                    </label>
 
-    /* Pagination */
 
-    const page =
-        e.target.closest("[data-page]");
+                    <label>
+                        تاریخ انقضا
+                        <input
+                            type="text"
+                            id="cardExpiry"
+                            maxlength="5"
+                            placeholder="MM/YY"
+                            autocomplete="off"
+                            required
+                        >
+                    </label>
 
-    if (page) {
 
-        currentPage =
-            Number(page.dataset.page);
+                    <label>
+                        CVV2
+                        <input
+                            type="password"
+                            id="cardCvv"
+                            inputmode="numeric"
+                            maxlength="4"
+                            placeholder="••••"
+                            autocomplete="off"
+                            required
+                        >
+                    </label>
 
-        renderProducts();
+                </div>
 
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({ behavior: "smooth" });
-    }
 
+                <div class="captcha-area">
 
-    /* Category */
+                    <div>
 
-    const category =
-        e.target.closest("[data-category-card]");
+                        <span>
+                            کد تأیید را وارد کنید:
+                        </span>
 
-    if (category) {
+                        <div
+                            id="captchaCode"
+                            class="captcha-code"
+                        >
+                            00000
+                        </div>
 
-        activeCategory =
-            category.dataset.categoryCard;
+                    </div>
 
-        currentPage = 1;
+                    <button
+                        type="button"
+                        id="refreshCaptcha"
+                        class="captcha-refresh"
+                    >
+                        ↻
+                    </button>
+
+                </div>
+
+
+                <label>
+                    کد تأیید
+                    <input
+                        type="text"
+                        id="captchaInput"
+                        inputmode="numeric"
+                        maxlength="5"
+                        placeholder="کد ۵ رقمی"
+                        autocomplete="off"
+                        required
+                    >
+                </label>
 
-        renderCategories();
-        renderProducts();
 
-        $("#productsTitle").textContent =
-            activeCategory;
+                <div
+                    id="paymentError"
+                    class="form-error"
+                ></div>
+
 
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({ behavior: "smooth" });
-    }
+                <div class="demo-warning">
+                    🔒 این صفحه کاملاً نمایشی است.
+                    اطلاعات کارت به هیچ بانک یا سروری ارسال نمی‌شود.
+                </div>
 
 
-    const filterCategory =
-        e.target.closest("[data-filter-category]");
+                <button
+                    type="submit"
+                    class="payment-button"
+                >
+                    تأیید پرداخت
+                </button>
 
-    if (filterCategory) {
+            </form>
 
-        activeCategory =
-            filterCategory.dataset.filterCategory;
+        </div>
 
-        currentPage = 1;
+    </div>
 
-        renderCategories();
-        renderProducts();
-    }
 
+    <!-- =========================
+         SUCCESS MODAL
+    ========================== -->
+    <div
+        id="successModal"
+        class="modal"
+        aria-hidden="true"
+    >
 
-    /* Suggestion */
+        <div class="modal-overlay"></div>
 
-    const suggestion =
-        e.target.closest("[data-suggestion]");
+        <div class="modal-box success-modal-box">
 
-    if (suggestion) {
+            <div class="success-icon">
+                ✓
+            </div>
 
-        const product =
-            findProduct(suggestion.dataset.suggestion);
+            <span class="section-kicker">
+                پرداخت موفق
+            </span>
 
-        if (product) {
-            openQuickView(product.id);
-        }
+            <h2>
+                سفارش با موفقیت ثبت شد 🎉
+            </h2>
 
-        $("#searchSuggestions").classList.remove("show");
-    }
+            <p>
+                شماره سفارش:
+            </p>
 
+            <strong
+                id="successOrderNumber"
+                class="order-number"
+            >
+                NOVA-000000
+            </strong>
 
-    /* Scroll */
+            <div
+                id="successOrderTotal"
+                class="success-total"
+            >
+                ۰ تومان
+            </div>
 
-    const scroll =
-        e.target.closest("[data-scroll]");
+            <div class="success-buttons">
 
-    if (scroll) {
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="viewPurchasesButton"
+                >
+                    مشاهده خریدهای من
+                </button>
 
-        const target =
-            document.querySelector(scroll.dataset.scroll);
+                <button
+                    type="button"
+                    class="secondary-button"
+                    data-close="successModal"
+                >
+                    ادامه خرید
+                </button>
 
-        target?.scrollIntoView({
-            behavior: "smooth"
-        });
-    }
+            </div>
 
+        </div>
 
-    /* Modal close */
+    </div>
 
-    const close =
-        e.target.closest("[data-close]");
 
-    if (close) {
+    <!-- =========================
+         PURCHASES MODAL
+    ========================== -->
+    <div
+        id="purchasesModal"
+        class="modal"
+        aria-hidden="true"
+    >
 
-        const id =
-            close.dataset.close;
+        <div class="modal-overlay"></div>
 
-        if (id === "cartDrawer") {
-            closeDrawer(id);
-        } else {
-            closeModal(id);
-        }
-    }
+        <div class="modal-box purchases-modal-box">
 
+            <button
+                type="button"
+                class="modal-close"
+                data-close="purchasesModal"
+            >
+                ×
+            </button>
 
-    /* Modal overlay */
 
-    if (e.target.classList.contains("modal-overlay")) {
+            <div class="modal-title">
 
-        const modal =
-            e.target.closest(".modal");
+                <span class="section-kicker">
+                    سفارش‌های من
+                </span>
 
-        if (modal) {
-            closeModal(modal.id);
-        }
-    }
+                <h2>
+                    خریدهای من
+                </h2>
 
-    if (e.target.classList.contains("drawer-overlay")) {
+            </div>
 
-        const drawer =
-            e.target.closest(".drawer");
 
-        if (drawer) {
-            closeDrawer(drawer.id);
-        }
-    }
+            <div
+                id="purchasesList"
+                class="purchases-list"
+            ></div>
 
+        </div>
 
-    /* Dashboard */
+    </div>
 
-    const dashboard =
-        e.target.closest("[data-dashboard]");
 
-    if (dashboard) {
+    <!-- =========================
+         NOTIFICATIONS MODAL
+    ========================== -->
+    <div
+        id="notificationsModal"
+        class="modal"
+        aria-hidden="true"
+    >
 
-        const type =
-            dashboard.dataset.dashboard;
+        <div class="modal-overlay"></div>
 
-        if (type === "purchases") {
-            closeModal("dashboardModal");
-            renderPurchases();
-            openModal("purchasesModal");
-        }
+        <div class="modal-box notifications-modal-box">
 
-        if (type === "favorites") {
-            closeModal("dashboardModal");
-            showFavorites();
-            document
-                .querySelector(".products-section")
-                ?.scrollIntoView({ behavior: "smooth" });
-        }
+            <button
+                type="button"
+                class="modal-close"
+                data-close="notificationsModal"
+            >
+                ×
+            </button>
 
-        if (type === "compare") {
-            closeModal("dashboardModal");
-            renderCompare();
-            openModal("compareModal");
-        }
+            <div class="modal-title">
 
-        if (type === "recent") {
-            closeModal("dashboardModal");
-            $("#recentlySection")
-                ?.scrollIntoView({ behavior: "smooth" });
-        }
+                <span class="section-kicker">
+                    اعلان‌ها
+                </span>
 
-        if (type === "notifications") {
-            closeModal("dashboardModal");
-            renderNotifications();
-            openModal("notificationsModal");
-        }
+                <h2>
+                    🔔 اعلان‌های Nova
+                </h2>
 
-        if (type === "orders") {
-            closeModal("dashboardModal");
-            renderPurchases();
-            openModal("purchasesModal");
-        }
+            </div>
 
-        if (type === "coupons") {
-            showToast("کدهای فعال: NOVA10 و NOVA5", "success");
-        }
 
-        if (type === "profile") {
-            showToast("بخش اطلاعات حساب نمایشی است");
-        }
-    }
+            <div
+                id="notificationsList"
+                class="notifications-list"
+            ></div>
 
+        </div>
 
-    /* Brands */
+    </div>
 
-    const brand =
-        e.target.closest("[data-brand]");
 
-    if (brand) {
+    <!-- =========================
+         HELP MODAL
+    ========================== -->
+    <div
+        id="helpModal"
+        class="modal"
+        aria-hidden="true"
+    >
 
-        searchTerm = brand.dataset.brand;
+        <div class="modal-overlay"></div>
 
-        $("#searchInput").value =
-            searchTerm;
+        <div class="modal-box help-modal-box">
 
-        currentPage = 1;
+            <button
+                type="button"
+                class="modal-close"
+                data-close="helpModal"
+            >
+                ×
+            </button>
 
-        renderProducts();
+            <div class="modal-title">
 
-        $("#productsTitle").textContent =
-            `محصولات ${searchTerm}`;
+                <span class="section-kicker">
+                    راهنمای Nova Shop
+                </span>
 
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({ behavior: "smooth" });
-    }
+                <h2>
+                    سوالات متداول
+                </h2>
 
+            </div>
 
-    /* Mobile navigation */
 
-    const mobile =
-        e.target.closest("[data-mobile-nav]");
+            <div class="faq-list">
 
-    if (mobile) {
+                <details>
+                    <summary>
+                        چطور محصول را به سبد خرید اضافه کنم؟
+                    </summary>
 
-        const type =
-            mobile.dataset.mobileNav;
+                    <p>
+                        از روی کارت محصول روی گزینه «افزودن به سبد»
+                        بزنید.
+                    </p>
+                </details>
 
-        if (type === "home") {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-        }
 
-        if (type === "categories") {
-            $("#megaMenu").classList.toggle("open");
-        }
+                <details>
+                    <summary>
+                        پرداخت واقعی است؟
+                    </summary>
 
-        if (type === "search") {
-            $("#searchInput").focus();
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-        }
+                    <p>
+                        خیر. پرداخت این نسخه کاملاً نمایشی است و
+                        به درگاه بانکی متصل نیست.
+                    </p>
+                </details>
 
-        if (type === "favorites") {
-            showFavorites();
-            document
-                .querySelector(".products-section")
-                ?.scrollIntoView({ behavior: "smooth" });
-        }
 
-        if (type === "cart") {
-            renderCart();
-            openDrawer("cartDrawer");
-        }
-    }
-});
+                <details>
+                    <summary>
+                        خریدهای من کجا ذخیره می‌شوند؟
+                    </summary>
 
+                    <p>
+                        سفارش‌های نمایشی در حافظه مرورگر شما ذخیره می‌شوند.
+                    </p>
+                </details>
 
-/* =========================================================
-   HEADER BUTTONS
-========================================================= */
 
-$("#cartButton").addEventListener("click", () => {
-    renderCart();
-    openDrawer("cartDrawer");
-});
+                <details>
+                    <summary>
+                        کد تخفیف چگونه کار می‌کند؟
+                    </summary>
 
-$("#favoritesButton").addEventListener("click", () => {
-    showFavorites();
-    document
-        .querySelector(".products-section")
-        ?.scrollIntoView({ behavior: "smooth" });
-});
+                    <p>
+                        در سبد خرید کد تخفیف را وارد کنید تا مبلغ نهایی
+                        دوباره محاسبه شود.
+                    </p>
+                </details>
 
-$("#compareButton").addEventListener("click", () => {
-    renderCompare();
-    openModal("compareModal");
-});
+            </div>
 
-$("#accountButton").addEventListener("click", () => {
+        </div>
 
-    const account =
-        load(STORAGE.account, null);
+    </div>
 
-    if (account) {
-        $("#dashboardUser").textContent =
-            account.email;
 
-        openModal("dashboardModal");
-    } else {
-        openModal("accountModal");
-    }
-});
+    <!-- =========================
+         MOBILE BOTTOM NAV
+    ========================== -->
+    <nav class="mobile-bottom-nav">
 
-$("#categoriesButton").addEventListener("click", () => {
-    $("#megaMenu").classList.toggle("open");
-});
+        <button
+            type="button"
+            data-mobile-nav="home"
+        >
+            <span>⌂</span>
+            خانه
+        </button>
 
-$("#heroShopButton").addEventListener("click", () => {
-    document
-        .querySelector(".products-section")
-        ?.scrollIntoView({ behavior: "smooth" });
-});
+        <button
+            type="button"
+            data-mobile-nav="categories"
+        >
+            <span>☰</span>
+            دسته‌ها
+        </button>
 
-$("#allCategoriesButton").addEventListener("click", () => {
-    activeCategory = "all";
-    currentPage = 1;
-    renderCategories();
-    renderProducts();
+        <button
+            type="button"
+            data-mobile-nav="search"
+        >
+            <span>⌕</span>
+            جستجو
+        </button>
 
-    document
-        .querySelector(".products-section")
-        ?.scrollIntoView({ behavior: "smooth" });
-});
+        <button
+            type="button"
+            data-mobile-nav="favorites"
+        >
+            <span>♡</span>
+            علاقه‌مندی
+        </button>
 
-$("#openFilters").addEventListener("click", () => {
-    $("#filtersPanel").classList.add("open");
-});
+        <button
+            type="button"
+            data-mobile-nav="cart"
+        >
+            <span>🛒</span>
+            سبد
+            <b id="mobileCartCount">0</b>
+        </button>
 
-$("#closeFilters").addEventListener("click", () => {
-    $("#filtersPanel").classList.remove("open");
-});
+    </nav>
 
 
-/* =========================================================
-   FILTER EVENTS
-========================================================= */
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+    <script src="script.js"></script>
 
-$("#sortSelect").addEventListener("change", e => {
-
-    currentSort = e.target.value;
-    currentPage = 1;
-
-    renderProducts();
-});
-
-["minPrice", "maxPrice"].forEach(id => {
-
-    $("#" + id).addEventListener("input", () => {
-        currentPage = 1;
-        renderProducts();
-    });
-
-});
-
-$("#discountFilter").addEventListener("change", () => {
-    currentPage = 1;
-    renderProducts();
-});
-
-$("#stockFilter").addEventListener("change", () => {
-    currentPage = 1;
-    renderProducts();
-});
-
-$$(".rating-filter").forEach(input => {
-
-    input.addEventListener("change", () => {
-        currentPage = 1;
-        renderProducts();
-    });
-
-});
-
-$("#resetFilters").addEventListener("click", () => {
-
-    activeCategory = "all";
-
-    $("#minPrice").value = "";
-    $("#maxPrice").value = "";
-
-    $("#discountFilter").checked = false;
-    $("#stockFilter").checked = false;
-
-    $$(".rating-filter").forEach(x => {
-        x.checked = false;
-    });
-
-    $("#sortSelect").value = "default";
-
-    currentSort = "default";
-    currentPage = 1;
-
-    renderCategories();
-    renderProducts();
-});
-
-
-/* =========================================================
-   CART EVENTS
-========================================================= */
-
-$("#applyCoupon").addEventListener(
-    "click",
-    applyCoupon
-);
-
-$$('input[name="shipping"]').forEach(input => {
-
-    input.addEventListener("change", renderCart);
-
-});
-
-$("#checkoutButton").addEventListener(
-    "click",
-    openPayment
-);
-
-
-/* =========================================================
-   PAYMENT EVENTS
-========================================================= */
-
-$("#refreshCaptcha").addEventListener(
-    "click",
-    createCaptcha
-);
-
-$("#paymentForm").addEventListener(
-    "submit",
-    e => {
-        e.preventDefault();
-        completePayment();
-    }
-);
-
-
-/* =========================================================
-   ACCOUNT
-========================================================= */
-
-$("#accountForm").addEventListener(
-    "submit",
-    e => {
-
-        e.preventDefault();
-
-        const email =
-            $("#accountEmail").value.trim();
-
-        save(STORAGE.account, {
-            email
-        });
-
-        $("#dashboardUser").textContent =
-            email;
-
-        closeModal("accountModal");
-
-        openModal("dashboardModal");
-
-        showToast(
-            "ورود نمایشی با موفقیت انجام شد",
-            "success"
-        );
-    }
-);
-
-
-/* =========================================================
-   PURCHASES
-========================================================= */
-
-$("#viewPurchasesButton").addEventListener(
-    "click",
-    () => {
-
-        closeModal("successModal");
-
-        renderPurchases();
-
-        openModal("purchasesModal");
-    }
-);
-
-
-/* =========================================================
-   NEWSLETTER
-========================================================= */
-
-$("#newsletterForm").addEventListener(
-    "submit",
-    e => {
-
-        e.preventDefault();
-
-        showToast(
-            "ایمیل شما در نسخه نمایشی ثبت شد",
-            "success"
-        );
-
-        $("#newsletterEmail").value = "";
-    }
-);
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-$("#footerAccount").addEventListener(
-    "click",
-    () => $("#accountButton").click()
-);
-
-$("#footerPurchases").addEventListener(
-    "click",
-    () => {
-
-        renderPurchases();
-        openModal("purchasesModal");
-    }
-);
-
-$("#footerFavorites").addEventListener(
-    "click",
-    () => {
-
-        showFavorites();
-
-        document
-            .querySelector(".products-section")
-            ?.scrollIntoView({
-                behavior: "smooth"
-            });
-    }
-);
-
-$("#footerCart").addEventListener(
-    "click",
-    () => {
-
-        renderCart();
-        openDrawer("cartDrawer");
-    }
-);
-
-
-/* =========================================================
-   HELP
-========================================================= */
-
-$$('[data-open="helpModal"]').forEach(button => {
-
-    button.addEventListener("click", () => {
-        openModal("helpModal");
-    });
-
-});
-
-$$('[data-open="notificationsModal"]').forEach(button => {
-
-    button.addEventListener("click", () => {
-        renderNotifications();
-        openModal("notificationsModal");
-    });
-
-});
-
-$$('[data-open="ordersModal"]').forEach(button => {
-
-    button.addEventListener("click", () => {
-        renderPurchases();
-        openModal("purchasesModal");
-    });
-
-});
-
-
-/* =========================================================
-   ESCAPE KEY
-========================================================= */
-
-document.addEventListener("keydown", e => {
-
-    if (e.key !== "Escape") return;
-
-    $$(".modal.open").forEach(modal => {
-        closeModal(modal.id);
-    });
-
-    $$(".drawer.open").forEach(drawer => {
-        closeDrawer(drawer.id);
-    });
-
-    $("#megaMenu").classList.remove("open");
-});
-
-
-/* =========================================================
-   INIT
-========================================================= */
-
-function init() {
-
-    products = generateProducts();
-
-    renderCategories();
-
-    renderProducts();
-
-    renderSectionProducts();
-
-    renderCart();
-
-    renderPurchases();
-
-    renderNotifications();
-
-    updateCounts();
-
-    setupHero();
-
-    setupCountdown();
-
-    setupSearch();
-
-    /*
-       جلوگیری از نمایش Loading طولانی
-    */
-    setTimeout(() => {
-        $("#loadingScreen")?.classList.add("hidden");
-    }, 700);
-
-    console.log(
-        "Nova Shop initialized:",
-        products.length,
-        "products"
-    );
-}
-
-init();
+</body>
+</html>
